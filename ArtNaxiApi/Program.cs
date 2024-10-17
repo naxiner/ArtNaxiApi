@@ -1,3 +1,6 @@
+using ArtNaxiApi.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace ArtNaxiApi
 {
     public class Program
@@ -5,6 +8,11 @@ namespace ArtNaxiApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDbContext<AppDbContext>(
+                options => options.UseSqlServer(builder.Configuration
+                .GetConnectionString("ArtNaxiDbConnectionString"))
+                );
             
             builder.Services.AddControllers();
 

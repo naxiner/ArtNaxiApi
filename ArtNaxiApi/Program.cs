@@ -1,4 +1,5 @@
 using ArtNaxiApi.Data;
+using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,7 @@ namespace ArtNaxiApi
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<ISDService, SDService>();
+            builder.Services.AddScoped<IImageRepository, ImageRepository>();
 
             var app = builder.Build();
 

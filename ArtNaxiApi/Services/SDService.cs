@@ -1,19 +1,23 @@
-﻿using System.Net.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text;
 using ArtNaxiApi.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
+using ArtNaxiApi.Repositories;
 
 namespace ArtNaxiApi.Services
 {
     public class SDService : ISDService
     {
         private readonly HttpClient _httpClient;
+        private readonly IImageRepository _imageRepository;
         private readonly string _apiUrlTextToImg;
 
-        public SDService(HttpClient httpClient, IConfiguration configuration)
+        public SDService(
+            HttpClient httpClient, 
+            IImageRepository imageRepository,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _imageRepository = imageRepository;
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
@@ -35,6 +39,16 @@ namespace ArtNaxiApi.Services
             byte[] imageBytes = Convert.FromBase64String(base64Image);
 
             string imagePath = await SaveImage(imageBytes);
+
+            var image = new Image
+            {
+                Url = imagePath,
+                CreationTime = DateTime.Now,
+                Request = request
+            };
+
+            await _imageRepository.AddImageAsync(image);
+
             return imagePath;
         }
 

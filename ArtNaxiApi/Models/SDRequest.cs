@@ -20,6 +20,10 @@ namespace ArtNaxiApi.Models
         public string SamplerName { get; set; } = string.Empty;
 
         [Required]
+        [JsonPropertyName("scheduler")]
+        public string Scheduler { get; set; } = "automatic";
+
+        [Required]
         [JsonPropertyName("steps")]
         public int Steps { get; set; }
 

@@ -8,7 +8,6 @@ namespace ArtNaxiApi.Models
         public string Url { get; set; }
         public DateTime CreationTime { get; set; } = DateTime.Now;
 
-        public Guid SDRequestId { get; set; }
         public SDRequest Request { get; set; }
     }
 }

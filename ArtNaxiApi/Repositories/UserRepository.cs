@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Data;
 using ArtNaxiApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArtNaxiApi.Repositories
 {
@@ -9,6 +10,23 @@ namespace ArtNaxiApi.Repositories
         public UserRepository(AppDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
+        public async Task<User> GetUserByNameAsync(string username)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            
+            if (user == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            return user;
         }
 
         public async Task<bool> AddUserAsync(User user)

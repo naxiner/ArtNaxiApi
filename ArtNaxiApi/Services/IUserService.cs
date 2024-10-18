@@ -5,6 +5,8 @@ namespace ArtNaxiApi.Services
 {
     public interface IUserService
     {
-        Task<User> RegisterAsync(RegistrDto model);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User> RegisterUserAsync(RegistrDto model);
+        Task<string> LoginUserAsync(LoginDto login);
     }
 }

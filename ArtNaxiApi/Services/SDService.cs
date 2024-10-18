@@ -52,16 +52,39 @@ namespace ArtNaxiApi.Services
             return imagePath;
         }
 
+        public async Task<bool> DeleteImageByIdAsync(Guid id)
+        {
+            var image = await _imageRepository.GetImageByIdAsync(id);
+            if (image == null)
+            {
+                return false;
+            }
+
+            await _imageRepository.DeleteImageByIdAsync(id);
+
+            var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var filePath = Path.Combine(webRootPath, image.Url.TrimStart('/')); 
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            return true;
+        }
+
         private async Task<string> SaveImage(byte[] imageBytes)
         {
-            var filePath = Path.Combine("Images");
-            if (!Directory.Exists(filePath))
+            var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var imagesFolder = Path.Combine(webRootPath, "Images");
+
+            if (!Directory.Exists(imagesFolder))
             {
-                Directory.CreateDirectory(filePath);
+                Directory.CreateDirectory(imagesFolder);
             }
 
             var fileName = $"{Guid.NewGuid()}.png";
-            var fullPath = Path.Combine(filePath, fileName);
+            var fullPath = Path.Combine(imagesFolder, fileName);
 
             await File.WriteAllBytesAsync(fullPath, imageBytes);
             return $"/Images/{fileName}";

@@ -21,8 +21,10 @@ namespace ArtNaxiApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddScoped<ISDService, SDService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IImageRepository, ImageRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ISDService, SDService>();
 
             var app = builder.Build();
 

@@ -1,10 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace ArtNaxiApi.Models
 {
     public class SDRequest
     {
+        [JsonIgnore]
+        public Guid Id { get; set; }
+
         [Required]
         [JsonPropertyName("prompt")]
         public string Prompt { get; set; } = string.Empty;
@@ -38,5 +43,11 @@ namespace ArtNaxiApi.Models
         [Required]
         [JsonPropertyName("height")]
         public int Height { get; set; }
+
+        [JsonIgnore]
+        public Guid? ImageId { get; set; }
+
+        [JsonIgnore]
+        public Image? Image { get; set; }
     }
 }

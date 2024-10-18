@@ -7,8 +7,8 @@ namespace ArtNaxiApi.Models
         public Guid Id { get; set; }
         public string Url { get; set; }
         public DateTime CreationTime { get; set; } = DateTime.Now;
-        
-        [NotMapped]
+
+        public Guid SDRequestId { get; set; }
         public SDRequest Request { get; set; }
     }
 }

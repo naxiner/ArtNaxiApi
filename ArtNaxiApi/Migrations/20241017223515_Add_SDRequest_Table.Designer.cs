@@ -4,6 +4,7 @@ using ArtNaxiApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArtNaxiApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241017223515_Add_SDRequest_Table")]
+    partial class Add_SDRequest_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,6 +43,8 @@ namespace ArtNaxiApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SDRequestId");
+
                     b.ToTable("Images");
                 });
 
@@ -56,9 +61,6 @@ namespace ArtNaxiApi.Migrations
                     b.Property<int>("Height")
                         .HasColumnType("int")
                         .HasAnnotation("Relational:JsonPropertyName", "height");
-
-                    b.Property<Guid>("ImageId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NegativePrompt")
                         .HasColumnType("nvarchar(max)")
@@ -93,27 +95,18 @@ namespace ArtNaxiApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImageId")
-                        .IsUnique();
-
                     b.ToTable("SDRequests");
-                });
-
-            modelBuilder.Entity("ArtNaxiApi.Models.SDRequest", b =>
-                {
-                    b.HasOne("ArtNaxiApi.Models.Image", "Image")
-                        .WithOne("Request")
-                        .HasForeignKey("ArtNaxiApi.Models.SDRequest", "ImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("ArtNaxiApi.Models.Image", b =>
                 {
-                    b.Navigation("Request")
+                    b.HasOne("ArtNaxiApi.Models.SDRequest", "Request")
+                        .WithMany()
+                        .HasForeignKey("SDRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Request");
                 });
 #pragma warning restore 612, 618
         }

@@ -17,13 +17,15 @@ namespace ArtNaxiApi.Services
             _jwtService = jwtService;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
-        {
-            return await _userRepository.GetAllUsersAsync();
-        }
-
         public async Task<User> RegisterUserAsync(RegistrDto model)
         {
+            if (await _userRepository.GetUserByNameAsync(model.Username) != null ||
+                await _userRepository.GetUserByEmailAsync(model.Email) != null)
+            {
+                // User with that Username or Email already exist
+                return null;
+            }
+
             var user = new User
             {
                 Username = model.Username,
@@ -39,18 +41,20 @@ namespace ArtNaxiApi.Services
 
         public async Task<string> LoginUserAsync(LoginDto model)
         {
-            var user = await _userRepository.GetUserByNameAsync(model.Username);
+            var user = await _userRepository.GetUserByNameOrEmailAsync(model.UsernameOrEmail);
 
             if (user == null)
             {
-                throw new KeyNotFoundException("User not found.");
+                // Invalid Username or Email
+                return null;
             }
 
             var verify = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
 
             if (!verify)
             {
-                throw new Exception("Failed to login.");
+                // Invalid Password
+                return null;
             }
 
             var token = _jwtService.GenerateToken(user);

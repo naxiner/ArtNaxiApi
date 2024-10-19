@@ -19,14 +19,17 @@ namespace ArtNaxiApi.Repositories
 
         public async Task<User> GetUserByNameAsync(string username)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            
-            if (user == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        }
 
-            return user;
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User> GetUserByNameOrEmailAsync(string usernameOrEmail)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
         }
 
         public async Task<bool> AddUserAsync(User user)

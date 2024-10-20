@@ -1,19 +1,23 @@
 ﻿using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
+using System.Security.Claims;
 
 namespace ArtNaxiApi.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserProfileService _userProfileService;
         private readonly IJwtService _jwtService;
 
         public UserService(
             IUserRepository userRepository,
+            IUserProfileService userProfileService,
             IJwtService jwtService)
         {
             _userRepository = userRepository;
+            _userProfileService = userProfileService;
             _jwtService = jwtService;
         }
 
@@ -36,6 +40,9 @@ namespace ArtNaxiApi.Services
             };
 
             await _userRepository.AddUserAsync(user);
+
+            await _userProfileService.CreateProfileAsync(user.Id);
+
             return user;
         }
 

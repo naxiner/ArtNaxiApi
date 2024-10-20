@@ -9,20 +9,29 @@ namespace ArtNaxiApi.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IImageRepository _imageRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IUserProfileRepository _userProfileRepository;
         private readonly string _apiUrlTextToImg;
 
         public SDService(
             HttpClient httpClient, 
             IImageRepository imageRepository,
+            IUserRepository userRepository,
+            IUserProfileRepository userProfileRepository,
             IConfiguration configuration)
         {
             _httpClient = httpClient;
             _imageRepository = imageRepository;
+            _userRepository = userRepository;
+            _userProfileRepository = userProfileRepository;
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
-        public async Task<string> GenerateImageAsync(SDRequest request)
+        public async Task<string> GenerateImageAsync(Guid userId, SDRequest request)
         {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            var userProfile = await _userProfileRepository.GetProfileByUserIdAsync(userId);
+
             // api url text to image generation
             var urlTxt2Img = _apiUrlTextToImg;
             var jsonRequest = JsonSerializer.Serialize(request);
@@ -44,18 +53,27 @@ namespace ArtNaxiApi.Services
             {
                 Url = imagePath,
                 CreationTime = DateTime.Now,
-                Request = request
+                Request = request,
+                User = user,
+                UserId = userId
             };
+
+            userProfile.Images.Add(image);
 
             await _imageRepository.AddImageAsync(image);
 
             return imagePath;
         }
 
-        public async Task<bool> DeleteImageByIdAsync(Guid id)
+        public async Task<bool> DeleteImageByIdAsync(Guid id, Guid currentUserId)
         {
             var image = await _imageRepository.GetImageByIdAsync(id);
             if (image == null)
+            {
+                return false;
+            }
+
+            if (image.UserId != currentUserId)
             {
                 return false;
             }

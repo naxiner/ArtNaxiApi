@@ -1,7 +1,9 @@
 ﻿using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ArtNaxiApi.Controllers
 {
@@ -38,6 +40,7 @@ namespace ArtNaxiApi.Controllers
             return Ok(imageById);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
         {
@@ -46,15 +49,19 @@ namespace ArtNaxiApi.Controllers
                 return BadRequest();
             }
 
-            var imagePath = await _sdService.GenerateImageAsync(sdRequest);
+            var userId = GetCurrentUserId();
+
+            var imagePath = await _sdService.GenerateImageAsync(userId, sdRequest);
 
             return Ok(imagePath);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {
-            var result = await _sdService.DeleteImageByIdAsync(id);
+            var currentUserId = GetCurrentUserId();
+            var result = await _sdService.DeleteImageByIdAsync(id, currentUserId);
 
             if (!result)
             {
@@ -62,6 +69,11 @@ namespace ArtNaxiApi.Controllers
             }
 
             return NoContent();
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
     }
 }

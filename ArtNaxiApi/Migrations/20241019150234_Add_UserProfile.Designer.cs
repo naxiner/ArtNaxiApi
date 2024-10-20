@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArtNaxiApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241019135400_Add_UserProfile")]
+    [Migration("20241019150234_Add_UserProfile")]
     partial class Add_UserProfile
     {
         /// <inheritdoc />
@@ -41,9 +41,14 @@ namespace ArtNaxiApi.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("UserProfileId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserProfileId");
 
                     b.ToTable("Images");
                 });
@@ -137,7 +142,7 @@ namespace ArtNaxiApi.Migrations
 
             modelBuilder.Entity("ArtNaxiApi.Models.UserProfile", b =>
                 {
-                    b.Property<Guid>("Guid")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -145,7 +150,6 @@ namespace ArtNaxiApi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ProfilePictureUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -154,7 +158,7 @@ namespace ArtNaxiApi.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Guid");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -169,6 +173,10 @@ namespace ArtNaxiApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("ArtNaxiApi.Models.UserProfile", null)
+                        .WithMany("Images")
+                        .HasForeignKey("UserProfileId");
 
                     b.Navigation("User");
                 });
@@ -204,6 +212,11 @@ namespace ArtNaxiApi.Migrations
                 {
                     b.Navigation("Profile")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ArtNaxiApi.Models.UserProfile", b =>
+                {
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

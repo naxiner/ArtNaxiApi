@@ -47,18 +47,34 @@ namespace ArtNaxiApi.Controllers
         public async Task<ActionResult<User>> UpdateUser(UpdateUserDTO model)
         {
             var userId = _userService.GetCurrentUserId();
+            
             if (userId == Guid.Empty)
             {
                 return Unauthorized("User is not authorized.");
             }
 
             var updateUserResult = await _userService.UpdateUserByIdAsync(userId, model);
+            
             if (!updateUserResult)
             {
                 return BadRequest("Failed to update user. Username or Email might be taken.");
             }
 
             return Ok("User updated successfully");
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteUser(Guid id)
+        {
+            var result = await _userService.DeleteUserByIdAsync(id);
+            
+            if (!result)
+            {
+                return BadRequest("Can't delete a user with this Id.");
+            }
+
+            return Ok("User deleted successfully.");
         }
     }
 }

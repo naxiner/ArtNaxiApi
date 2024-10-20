@@ -11,5 +11,6 @@ namespace ArtNaxiApi.Repositories
         Task<User> GetUserByNameOrEmailAsync(string usernameOrEmail);
         Task<bool> AddUserAsync(User user);
         Task UpdateUserAsync(User user);
+        Task DeleteUserAsync(User user);
     }
 }

@@ -133,6 +133,27 @@ namespace ArtNaxiApi.Services
             return true;
         }
 
+        public async Task<bool> DeleteUserByIdAsync(Guid id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                // User not found
+                return false;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (user.Id != currentUserId) // Add a check for the Admin role here
+            {
+                // User does not have an Id, or is not in the Admin role
+                return false;
+            }
+
+            await _userRepository.DeleteUserAsync(user);
+
+            return true;
+        }
+
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);

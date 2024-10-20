@@ -9,5 +9,6 @@ namespace ArtNaxiApi.Services
         Task<string> LoginUserAsync(LoginDto login);
         Guid GetCurrentUserId();
         Task<bool> UpdateUserByIdAsync(Guid id, UpdateUserDTO model);
+        Task<bool> DeleteUserByIdAsync(Guid id);
     }
 }

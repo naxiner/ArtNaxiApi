@@ -129,6 +129,7 @@ namespace ArtNaxiApi.Services
                 updated = true;
             }
 
+            user.UpdatedAt = DateTime.UtcNow;
             return true;
         }
 

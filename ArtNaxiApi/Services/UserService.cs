@@ -10,15 +10,18 @@ namespace ArtNaxiApi.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileService _userProfileService;
         private readonly IJwtService _jwtService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
             IUserProfileService userProfileService,
-            IJwtService jwtService)
+            IJwtService jwtService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _userProfileService = userProfileService;
             _jwtService = jwtService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<User> RegisterUserAsync(RegistrDto model)
@@ -66,6 +69,18 @@ namespace ArtNaxiApi.Services
 
             var token = _jwtService.GenerateToken(user);
             return token;
+        }
+
+        public Guid GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Guid.Empty;
+            }
+
+            return Guid.Parse(userIdClaim.Value);
         }
     }
 }

@@ -12,11 +12,16 @@ namespace ArtNaxiApi.Controllers
     public class ImageController : ControllerBase
     {
         private readonly ISDService _sdService;
+        private readonly IUserService _userService;
         private readonly IImageRepository _imageRepository;
 
-        public ImageController(ISDService sdService, IImageRepository imageRepository)
+        public ImageController(
+            ISDService sdService,
+            IUserService userService,
+            IImageRepository imageRepository)
         {
             _sdService = sdService;
+            _userService = userService;
             _imageRepository = imageRepository;
         }
 
@@ -49,7 +54,7 @@ namespace ArtNaxiApi.Controllers
                 return BadRequest();
             }
 
-            var userId = GetCurrentUserId();
+            var userId = _userService.GetCurrentUserId();
 
             var imagePath = await _sdService.GenerateImageAsync(userId, sdRequest);
 
@@ -60,8 +65,7 @@ namespace ArtNaxiApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {
-            var currentUserId = GetCurrentUserId();
-            var result = await _sdService.DeleteImageByIdAsync(id, currentUserId);
+            var result = await _sdService.DeleteImageByIdAsync(id);
 
             if (!result)
             {
@@ -69,11 +73,6 @@ namespace ArtNaxiApi.Controllers
             }
 
             return NoContent();
-        }
-
-        private Guid GetCurrentUserId()
-        {
-            return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
     }
 }

@@ -10,6 +10,7 @@ namespace ArtNaxiApi.Services
         private readonly HttpClient _httpClient;
         private readonly IImageRepository _imageRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly string _apiUrlTextToImg;
 
@@ -17,12 +18,14 @@ namespace ArtNaxiApi.Services
             HttpClient httpClient, 
             IImageRepository imageRepository,
             IUserRepository userRepository,
+            IUserService userService,
             IUserProfileRepository userProfileRepository,
             IConfiguration configuration)
         {
             _httpClient = httpClient;
             _imageRepository = imageRepository;
             _userRepository = userRepository;
+            _userService = userService;
             _userProfileRepository = userProfileRepository;
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
@@ -65,13 +68,15 @@ namespace ArtNaxiApi.Services
             return imagePath;
         }
 
-        public async Task<bool> DeleteImageByIdAsync(Guid id, Guid currentUserId)
+        public async Task<bool> DeleteImageByIdAsync(Guid id)
         {
             var image = await _imageRepository.GetImageByIdAsync(id);
             if (image == null)
             {
                 return false;
             }
+
+            var currentUserId = _userService.GetCurrentUserId();
 
             if (image.UserId != currentUserId)
             {

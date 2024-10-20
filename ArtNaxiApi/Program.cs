@@ -1,4 +1,5 @@
 using ArtNaxiApi.Data;
+using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,10 +72,12 @@ namespace ArtNaxiApi
             });
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IImageRepository, ImageRepository>();
 
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<ISDService, SDService>();
 
             var app = builder.Build();

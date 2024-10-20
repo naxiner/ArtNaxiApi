@@ -1,5 +1,7 @@
-﻿using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Models;
+using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArtNaxiApi.Controllers
@@ -38,6 +40,25 @@ namespace ArtNaxiApi.Controllers
             }
 
             return Ok(token);
+        }
+
+        [Authorize]
+        [HttpPut("update")]
+        public async Task<ActionResult<User>> UpdateUser(UpdateUserDTO model)
+        {
+            var userId = _userService.GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized("User is not authorized.");
+            }
+
+            var updateUserResult = await _userService.UpdateUserByIdAsync(userId, model);
+            if (!updateUserResult)
+            {
+                return BadRequest("Failed to update user. Username or Email might be taken.");
+            }
+
+            return Ok("User updated successfully");
         }
     }
 }

@@ -37,7 +37,7 @@ namespace ArtNaxiApi.Services
             {
                 Username = model.Username,
                 Email = model.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                PasswordHash = HashPassword(model.Password),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -81,6 +81,60 @@ namespace ArtNaxiApi.Services
             }
 
             return Guid.Parse(userIdClaim.Value);
+        }
+
+        public async Task<bool> UpdateUserByIdAsync(Guid id, UpdateUserDTO model)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                // User not found
+                return false;
+            }
+
+            var existingUser = await _userRepository.GetUserByNameAsync(model.Username);
+            if (existingUser == null)
+            {
+                existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+            }
+
+            if (existingUser != null && existingUser.Id != id) 
+            {
+                return false; // Username or email already exist for another user
+            }
+
+            bool updated = false;
+
+            if (!string.IsNullOrEmpty(model.Username) && user.Username != model.Username)
+            {
+                user.Username = model.Username;
+                updated = true;
+            }
+
+            if (!string.IsNullOrEmpty(model.Email) && user.Email != model.Email)
+            {
+                user.Email = model.Email;
+                updated = true;
+            }
+
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                user.PasswordHash = HashPassword(model.Password);
+                updated = true;
+            }
+
+            if (updated)
+            {
+                await _userRepository.UpdateUserAsync(user);
+                updated = true;
+            }
+
+            return true;
+        }
+
+        private string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Models;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -36,7 +37,9 @@ namespace ArtNaxiApi.Services
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return JsonConvert.SerializeObject(new { token = tokenString });
         }
     }
 }

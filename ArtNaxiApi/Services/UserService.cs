@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Constants;
+using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
 using System.Security.Claims;
@@ -38,6 +39,7 @@ namespace ArtNaxiApi.Services
                 Username = model.Username,
                 Email = model.Email,
                 PasswordHash = HashPassword(model.Password),
+                Role = Roles.User,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

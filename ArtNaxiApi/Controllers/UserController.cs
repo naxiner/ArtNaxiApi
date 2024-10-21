@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Constants;
+using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -43,17 +44,18 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
-        [HttpPut("update")]
-        public async Task<ActionResult<User>> UpdateUser(UpdateUserDTO model)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<User>> UpdateUser(Guid id, UpdateUserDTO model)
         {
-            var userId = _userService.GetCurrentUserId();
-            
-            if (userId == Guid.Empty)
-            {
-                return Unauthorized("User is not authorized.");
-            }
+            var currentUserId = _userService.GetCurrentUserId();
+            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
 
-            var updateUserResult = await _userService.UpdateUserByIdAsync(userId, model);
+            if (id != currentUserId && !User.IsInRole(Roles.Admin))
+            {
+                return Forbid("You are not allowed to update this user.");
+            }
+            
+            var updateUserResult = await _userService.UpdateUserByIdAsync(id, model);
             
             if (!updateUserResult)
             {
@@ -67,6 +69,14 @@ namespace ArtNaxiApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
+            var currentUserId = _userService.GetCurrentUserId();
+            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+
+            if (id != currentUserId && !User.IsInRole(Roles.Admin))
+            {
+                return BadRequest("You are not allowed to delete this user.");
+            }
+
             var result = await _userService.DeleteUserByIdAsync(id);
             
             if (!result)

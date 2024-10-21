@@ -73,18 +73,6 @@ namespace ArtNaxiApi.Services
             return token;
         }
 
-        public Guid GetCurrentUserId()
-        {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-            {
-                return Guid.Empty;
-            }
-
-            return Guid.Parse(userIdClaim.Value);
-        }
-
         public async Task<bool> UpdateUserByIdAsync(Guid id, UpdateUserDTO model)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
@@ -127,12 +115,11 @@ namespace ArtNaxiApi.Services
 
             if (updated)
             {
+                user.UpdatedAt = DateTime.UtcNow;
                 await _userRepository.UpdateUserAsync(user);
-                updated = true;
             }
 
-            user.UpdatedAt = DateTime.UtcNow;
-            return true;
+            return updated;
         }
 
         public async Task<bool> DeleteUserByIdAsync(Guid id)
@@ -144,16 +131,26 @@ namespace ArtNaxiApi.Services
                 return false;
             }
 
-            var currentUserId = GetCurrentUserId();
-            if (user.Id != currentUserId) // Add a check for the Admin role here
-            {
-                // User does not have an Id, or is not in the Admin role
-                return false;
-            }
-
             await _userRepository.DeleteUserAsync(user);
 
             return true;
+        }
+
+        public Guid GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Guid.Empty;
+            }
+
+            return Guid.Parse(userIdClaim.Value);
+        }
+
+        public async Task<User> GetUserByIdAsync(Guid id)
+        {
+            return await _userRepository.GetUserByIdAsync(id);
         }
 
         private string HashPassword(string password)

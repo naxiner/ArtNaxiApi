@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ArtNaxiApi.Models
 {
@@ -11,6 +12,7 @@ namespace ArtNaxiApi.Models
         [Required]
         public Guid UserId { get; set; }
 
+        [JsonIgnore]
         [ForeignKey("UserId")]
         public User User { get; set; }
 

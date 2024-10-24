@@ -1,4 +1,5 @@
 ﻿using ArtNaxiApi.Models;
+using ArtNaxiApi.Models.DTO;
 
 namespace ArtNaxiApi.Services
 {
@@ -6,5 +7,6 @@ namespace ArtNaxiApi.Services
     {
         Task CreateProfileAsync(Guid userId);
         Task<UserProfile> GetProfileByUserIdAsync(Guid userId);
+        UserProfileDto MapToUserProfileDto(UserProfile userProfile);
     }
 }

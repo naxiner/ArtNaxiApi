@@ -21,6 +21,7 @@ namespace ArtNaxiApi.Repositories
         public async Task<UserProfile> GetProfileByUserIdAsync(Guid userId)
         {
             return await _context.UserProfiles
+                .Include(i => i.User)
                 .Include(p => p.Images)
                     .ThenInclude(i => i.User)
                 .Include(p => p.Images)

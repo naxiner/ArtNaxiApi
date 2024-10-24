@@ -15,11 +15,18 @@ namespace ArtNaxiApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<UserProfile> GetUserProfileAsync(Guid id)
+        public async Task<ActionResult> GetUserProfileAsync(Guid id)
         {
             var userProfile = await _userProfileService.GetProfileByUserIdAsync(id);
 
-            return userProfile;
+            if (userProfile == null)
+            {
+                return NotFound();
+            }
+
+            var userProfileDto = _userProfileService.MapToUserProfileDto(userProfile);
+
+            return Ok(userProfileDto);
         }
     }
 }

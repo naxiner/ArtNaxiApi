@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ArtNaxiApi.Services
 {
@@ -20,6 +21,11 @@ namespace ArtNaxiApi.Services
             };
 
             await _userProfileRepository.AddProfileAsync(profile);
+        }
+
+        public async Task<UserProfile> GetProfileByUserIdAsync(Guid userId)
+        {
+            return await _userProfileRepository.GetProfileByUserIdAsync(userId);
         }
     }
 }

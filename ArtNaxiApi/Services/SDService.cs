@@ -62,8 +62,10 @@ namespace ArtNaxiApi.Services
             };
 
             userProfile.Images.Add(image);
+            userProfile.UpdatedAt = DateTime.Now;
 
             await _imageRepository.AddImageAsync(image);
+            await _userProfileRepository.UpdateAsync(userProfile);
 
             return imagePath;
         }

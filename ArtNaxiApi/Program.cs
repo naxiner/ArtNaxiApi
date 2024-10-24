@@ -106,6 +106,8 @@ namespace ArtNaxiApi
 
             app.UseCors("Cors");
 
+            app.UseStaticFiles();
+
             app.UseAuthentication();
             app.UseAuthorization();
 

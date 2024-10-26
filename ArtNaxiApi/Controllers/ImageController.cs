@@ -58,7 +58,7 @@ namespace ArtNaxiApi.Controllers
 
             var imagePath = await _sdService.GenerateImageAsync(userId, sdRequest);
 
-            return Ok(imagePath);
+            return Ok(new { imagePath });
         }
 
         [Authorize]

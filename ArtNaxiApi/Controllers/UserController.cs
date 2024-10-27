@@ -46,7 +46,7 @@ namespace ArtNaxiApi.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<ActionResult<User>> UpdateUser(Guid id, UpdateUserDTO model)
+        public async Task<ActionResult> UpdateUser(Guid id, UpdateUserDTO model)
         {
             var result = await _userService.UpdateUserByIdAsync(id, model, User);
 

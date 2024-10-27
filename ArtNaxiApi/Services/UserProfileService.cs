@@ -1,6 +1,7 @@
 ﻿using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
+using System.Net;
 
 namespace ArtNaxiApi.Services
 {
@@ -23,12 +24,20 @@ namespace ArtNaxiApi.Services
             await _userProfileRepository.AddProfileAsync(profile);
         }
 
-        public async Task<UserProfile> GetProfileByUserIdAsync(Guid userId)
+        public async Task<(HttpStatusCode, UserProfileDto?)> GetProfileByUserIdAsync(Guid userId)
         {
-            return await _userProfileRepository.GetProfileByUserIdAsync(userId);
+            var userProfile = await _userProfileRepository.GetProfileByUserIdAsync(userId);
+            if (userProfile == null)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            var userProfileDto = MapToUserProfileDto(userProfile);
+            
+            return (HttpStatusCode.OK, userProfileDto);
         }
 
-        public UserProfileDto MapToUserProfileDto(UserProfile userProfile)
+        private UserProfileDto MapToUserProfileDto(UserProfile userProfile)
         {
             return new UserProfileDto
             {

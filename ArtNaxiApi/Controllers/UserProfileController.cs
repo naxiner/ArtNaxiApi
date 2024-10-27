@@ -1,6 +1,6 @@
-﻿using ArtNaxiApi.Models;
-using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace ArtNaxiApi.Controllers
 {
@@ -17,16 +17,14 @@ namespace ArtNaxiApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetUserProfileAsync(Guid id)
         {
-            var userProfile = await _userProfileService.GetProfileByUserIdAsync(id);
+            var (result, userProfileDto) = await _userProfileService.GetProfileByUserIdAsync(id);
 
-            if (userProfile == null)
+            return result switch
             {
-                return NotFound();
-            }
-
-            var userProfileDto = _userProfileService.MapToUserProfileDto(userProfile);
-
-            return Ok(userProfileDto);
+                HttpStatusCode.NotFound => NotFound("User with this Id not found."),
+                HttpStatusCode.OK => Ok(userProfileDto),
+                _ => BadRequest()
+            };
         }
     }
 }

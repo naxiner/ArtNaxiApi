@@ -1,12 +1,11 @@
-﻿using ArtNaxiApi.Models;
-using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Models.DTO;
+using System.Net;
 
 namespace ArtNaxiApi.Services
 {
     public interface IUserProfileService
     {
         Task CreateProfileAsync(Guid userId);
-        Task<UserProfile> GetProfileByUserIdAsync(Guid userId);
-        UserProfileDto MapToUserProfileDto(UserProfile userProfile);
+        Task<(HttpStatusCode, UserProfileDto?)> GetProfileByUserIdAsync(Guid userId);
     }
 }

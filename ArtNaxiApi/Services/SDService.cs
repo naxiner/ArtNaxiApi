@@ -4,6 +4,7 @@ using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Constants;
 using System.Security.Claims;
+using System.Net;
 
 namespace ArtNaxiApi.Services
 {
@@ -32,18 +33,26 @@ namespace ArtNaxiApi.Services
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
-        public async Task<string> GenerateImageAsync(Guid userId, SDRequest request)
+        public async Task<(HttpStatusCode, string?)> GenerateImageAsync(SDRequest request)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            var userProfile = await _userProfileRepository.GetProfileByUserIdAsync(userId);
-
             // api url text to image generation
             var urlTxt2Img = _apiUrlTextToImg;
             var jsonRequest = JsonSerializer.Serialize(request);
-
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(urlTxt2Img, content);
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage response;
+            
+            try
+            {
+                response = await _httpClient.PostAsync(urlTxt2Img, content);
+            }
+            catch
+            {
+                return (HttpStatusCode.ServiceUnavailable, null);
+            }
+
+            var userId = _userService.GetCurrentUserId();
+            var currentUser = await _userRepository.GetUserByIdAsync(userId);
+            var userProfile = await _userProfileRepository.GetProfileByUserIdAsync(userId);
 
             string responseBody = await response.Content.ReadAsStringAsync();
 
@@ -52,14 +61,23 @@ namespace ArtNaxiApi.Services
 
             byte[] imageBytes = Convert.FromBase64String(base64Image);
 
-            string imagePath = await SaveImage(imageBytes);
+            string imagePath;
+
+            try
+            {
+                imagePath = await SaveImage(imageBytes);
+            }
+            catch
+            {
+                return (HttpStatusCode.InternalServerError, null);
+            }
 
             var image = new Image
             {
                 Url = imagePath,
                 CreationTime = DateTime.Now,
                 Request = request,
-                User = user,
+                User = currentUser,
                 UserId = userId
             };
 
@@ -69,21 +87,21 @@ namespace ArtNaxiApi.Services
             await _imageRepository.AddImageAsync(image);
             await _userProfileRepository.UpdateAsync(userProfile);
 
-            return imagePath;
+            return (HttpStatusCode.OK, imagePath);
         }
 
-        public async Task<ResultCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user)
+        public async Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user)
         {
             var image = await _imageRepository.GetImageByIdAsync(id);
             if (image == null)
             {
-                return ResultCode.NotFound;
+                return HttpStatusCode.NotFound;
             }
 
             var currentUserId = _userService.GetCurrentUserId();
             if (image.UserId != currentUserId && !user.IsInRole(Roles.Admin))
             {
-                return ResultCode.Forbid;
+                return HttpStatusCode.Forbidden;
             }
 
             await _imageRepository.DeleteImageByIdAsync(id);
@@ -96,7 +114,7 @@ namespace ArtNaxiApi.Services
                 File.Delete(filePath);
             }
 
-            return ResultCode.NoContent;
+            return HttpStatusCode.NoContent;
         }
 
         private async Task<string> SaveImage(byte[] imageBytes)

@@ -1,9 +1,9 @@
-﻿using ArtNaxiApi.Constants;
-using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace ArtNaxiApi.Controllers
 {
@@ -20,71 +20,60 @@ namespace ArtNaxiApi.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> RegisterUser(RegistrDto model)
         {
-            var user = await _userService.RegisterUserAsync(model);
+            var result = await _userService.RegisterUserAsync(model);
 
-            if (user == null)
+            return result switch
             {
-                return BadRequest("User with that Username or Email already exist.");
-            }
-
-            return Ok(user);
+                HttpStatusCode.Conflict => Conflict("User with that Username or Email already exist."),
+                HttpStatusCode.OK => Ok("User register successfull."),
+                _ => BadRequest()
+            };
         }
 
         [HttpPost("login")]
         public async Task<ActionResult> LoginUser(LoginDto model)
         {
-            var token = await _userService.LoginUserAsync(model);
+            var (result, token) = await _userService.LoginUserAsync(model);
 
-            if (token == null)
+            return result switch
             {
-                return Unauthorized("Invalid Username or Password."); 
-            }
-
-            return Ok(token);
+                HttpStatusCode.NotFound => NotFound("Invalid Username or Email."),
+                HttpStatusCode.BadRequest => Forbid("Invalid Password."),
+                HttpStatusCode.OK => Ok(token),
+                _ => BadRequest()
+            };
         }
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<ActionResult<User>> UpdateUser(Guid id, UpdateUserDTO model)
+        public async Task<ActionResult> UpdateUser(Guid id, UpdateUserDTO model)
         {
-            var currentUserId = _userService.GetCurrentUserId();
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var result = await _userService.UpdateUserByIdAsync(id, model, User);
 
-            if (id != currentUserId && !User.IsInRole(Roles.Admin))
+            return result switch
             {
-                return Forbid("You are not allowed to update this user.");
-            }
-            
-            var updateUserResult = await _userService.UpdateUserByIdAsync(id, model);
-            
-            if (!updateUserResult)
-            {
-                return BadRequest("Failed to update user. Username or Email might be taken.");
-            }
-
-            return Ok("User updated successfully");
+                HttpStatusCode.NotFound => NotFound("User not found."),
+                HttpStatusCode.Conflict => Conflict("Username or email already exist for another user."),
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.NoContent => NoContent(),
+                HttpStatusCode.OK => Ok("User updated successfully."),
+                _ => BadRequest()
+            };
         }
 
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
-            var currentUserId = _userService.GetCurrentUserId();
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var result = await _userService.DeleteUserByIdAsync(id, User);
 
-            if (id != currentUserId && !User.IsInRole(Roles.Admin))
+            return result switch
             {
-                return BadRequest("You are not allowed to delete this user.");
-            }
-
-            var result = await _userService.DeleteUserByIdAsync(id);
-            
-            if (!result)
-            {
-                return BadRequest("Can't delete a user with this Id.");
-            }
-
-            return Ok("User deleted successfully.");
+                HttpStatusCode.BadRequest => BadRequest("You are not allowed to delete this user."),
+                HttpStatusCode.NotFound => NotFound("User not found."),
+                HttpStatusCode.OK => Ok("User deleted successfully."),
+                _ => BadRequest()
+            };
         }
     }
 }

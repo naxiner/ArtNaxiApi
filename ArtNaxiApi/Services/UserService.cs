@@ -2,6 +2,7 @@
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
+using System.Net;
 using System.Security.Claims;
 
 namespace ArtNaxiApi.Services
@@ -25,13 +26,13 @@ namespace ArtNaxiApi.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<User> RegisterUserAsync(RegistrDto model)
+        public async Task<HttpStatusCode> RegisterUserAsync(RegistrDto model)
         {
             if (await _userRepository.GetUserByNameAsync(model.Username) != null ||
                 await _userRepository.GetUserByEmailAsync(model.Email) != null)
             {
                 // User with that Username or Email already exist
-                return null;
+                return HttpStatusCode.Conflict;
             }
 
             var user = new User
@@ -48,49 +49,53 @@ namespace ArtNaxiApi.Services
 
             await _userProfileService.CreateProfileAsync(user.Id);
 
-            return user;
+            return HttpStatusCode.OK;
         }
 
-        public async Task<string> LoginUserAsync(LoginDto model)
+        public async Task<(HttpStatusCode, string?)> LoginUserAsync(LoginDto model)
         {
             var user = await _userRepository.GetUserByNameOrEmailAsync(model.UsernameOrEmail);
-
             if (user == null)
             {
                 // Invalid Username or Email
-                return null;
+                return (HttpStatusCode.NotFound, null);
             }
 
             var verify = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
-
             if (!verify)
             {
                 // Invalid Password
-                return null;
+                return (HttpStatusCode.BadRequest, null);
             }
 
             var token = _jwtService.GenerateToken(user);
-            return token;
+            return (HttpStatusCode.OK, token);
         }
 
-        public async Task<bool> UpdateUserByIdAsync(Guid id, UpdateUserDTO model)
+        public async Task<HttpStatusCode> UpdateUserByIdAsync(Guid id, UpdateUserDTO model, ClaimsPrincipal userClaim)
         {
+            var currentUserId = GetCurrentUserId();
+            if (id != currentUserId && !userClaim.IsInRole(Roles.Admin))
+            {
+                return HttpStatusCode.Forbidden;   // You are not allowed to update this user
+            }
+
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
-                // User not found
-                return false;
+                return HttpStatusCode.NotFound; // User not found
             }
 
             var existingUser = await _userRepository.GetUserByNameAsync(model.Username);
-            if (existingUser == null)
+            if (existingUser != null && existingUser.Id != id)
             {
-                existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+                return HttpStatusCode.Conflict; // Username already exists for another user
             }
 
-            if (existingUser != null && existingUser.Id != id) 
+            existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+            if (existingUser != null && existingUser.Id != id)
             {
-                return false; // Username or email already exist for another user
+                return HttpStatusCode.Conflict; // Email already exists for another user
             }
 
             bool updated = false;
@@ -117,23 +122,29 @@ namespace ArtNaxiApi.Services
             {
                 user.UpdatedAt = DateTime.UtcNow;
                 await _userRepository.UpdateUserAsync(user);
+                return HttpStatusCode.OK;
             }
 
-            return updated;
+            return HttpStatusCode.NoContent;
         }
 
-        public async Task<bool> DeleteUserByIdAsync(Guid id)
+        public async Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim)
         {
+            var currentUserId = GetCurrentUserId();
+            if (id != currentUserId && !userClaim.IsInRole(Roles.Admin))
+            {
+                return HttpStatusCode.BadRequest;   // You are not allowed to delete this user
+            }
+
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
-                // User not found
-                return false;
+                return HttpStatusCode.NotFound; // User not found
             }
 
             await _userRepository.DeleteUserAsync(user);
 
-            return true;
+            return HttpStatusCode.OK;
         }
 
         public Guid GetCurrentUserId()

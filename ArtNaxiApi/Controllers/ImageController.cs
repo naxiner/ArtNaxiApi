@@ -3,7 +3,7 @@ using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ArtNaxiApi.Constants;
+using System.Net;
 
 namespace ArtNaxiApi.Controllers
 {
@@ -12,16 +12,13 @@ namespace ArtNaxiApi.Controllers
     public class ImageController : ControllerBase
     {
         private readonly ISDService _sdService;
-        private readonly IUserService _userService;
         private readonly IImageRepository _imageRepository;
 
         public ImageController(
             ISDService sdService,
-            IUserService userService,
             IImageRepository imageRepository)
         {
             _sdService = sdService;
-            _userService = userService;
             _imageRepository = imageRepository;
         }
 
@@ -49,16 +46,14 @@ namespace ArtNaxiApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
         {
-            if (!ModelState.IsValid)
+            var (result, imagePath) = await _sdService.GenerateImageAsync(sdRequest);
+            return result switch
             {
-                return BadRequest();
-            }
-
-            var userId = _userService.GetCurrentUserId();
-
-            var imagePath = await _sdService.GenerateImageAsync(userId, sdRequest);
-
-            return Ok(new { imagePath });
+                HttpStatusCode.OK => Ok(new { imagePath }),
+                HttpStatusCode.InternalServerError => StatusCode(500, "Error when saving image."),
+                HttpStatusCode.ServiceUnavailable => StatusCode(503, "Stable Diffussion server Unavaliable."),
+                _ => BadRequest()
+            };
         }
 
         [Authorize]
@@ -69,9 +64,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                ResultCode.NotFound => NotFound(),
-                ResultCode.Forbid => Forbid(),
-                ResultCode.NoContent => NoContent(),
+                HttpStatusCode.NotFound => NotFound(),
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.NoContent => NoContent(),
                 _ => BadRequest()
             };
         }

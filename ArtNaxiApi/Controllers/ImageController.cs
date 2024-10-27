@@ -3,7 +3,7 @@ using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using ArtNaxiApi.Constants;
 
 namespace ArtNaxiApi.Controllers
 {
@@ -65,14 +65,15 @@ namespace ArtNaxiApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {
-            var result = await _sdService.DeleteImageByIdAsync(id);
+            var result = await _sdService.DeleteImageByIdAsync(id, User);
 
-            if (!result)
+            return result switch
             {
-                return NotFound();
-            }
-
-            return NoContent();
+                ResultCode.NotFound => NotFound(),
+                ResultCode.Forbid => Forbid(),
+                ResultCode.NoContent => NoContent(),
+                _ => BadRequest()
+            };
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Text;
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
+using ArtNaxiApi.Constants;
+using System.Security.Claims;
 
 namespace ArtNaxiApi.Services
 {
@@ -70,19 +72,18 @@ namespace ArtNaxiApi.Services
             return imagePath;
         }
 
-        public async Task<bool> DeleteImageByIdAsync(Guid id)
+        public async Task<ResultCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user)
         {
             var image = await _imageRepository.GetImageByIdAsync(id);
             if (image == null)
             {
-                return false;
+                return ResultCode.NotFound;
             }
 
             var currentUserId = _userService.GetCurrentUserId();
-
-            if (image.UserId != currentUserId)
+            if (image.UserId != currentUserId && !user.IsInRole(Roles.Admin))
             {
-                return false;
+                return ResultCode.Forbid;
             }
 
             await _imageRepository.DeleteImageByIdAsync(id);
@@ -95,7 +96,7 @@ namespace ArtNaxiApi.Services
                 File.Delete(filePath);
             }
 
-            return true;
+            return ResultCode.NoContent;
         }
 
         private async Task<string> SaveImage(byte[] imageBytes)

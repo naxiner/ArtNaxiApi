@@ -1,10 +1,12 @@
-﻿using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Constants;
+using ArtNaxiApi.Models;
+using System.Security.Claims;
 
 namespace ArtNaxiApi.Services
 {
     public interface ISDService
     {
         Task<string> GenerateImageAsync(Guid userId, SDRequest request);
-        Task<bool> DeleteImageByIdAsync(Guid id);
+        Task<ResultCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user);
     }
 }

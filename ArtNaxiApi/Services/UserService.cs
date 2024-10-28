@@ -52,24 +52,54 @@ namespace ArtNaxiApi.Services
             return HttpStatusCode.OK;
         }
 
-        public async Task<(HttpStatusCode, string?)> LoginUserAsync(LoginDto model)
+        public async Task<(HttpStatusCode, string?, string?)> LoginUserAsync(LoginDto model)
         {
             var user = await _userRepository.GetUserByNameOrEmailAsync(model.UsernameOrEmail);
             if (user == null)
             {
                 // Invalid Username or Email
-                return (HttpStatusCode.NotFound, null);
+                return (HttpStatusCode.NotFound, null, null);
             }
 
             var verify = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
             if (!verify)
             {
                 // Invalid Password
-                return (HttpStatusCode.BadRequest, null);
+                return (HttpStatusCode.BadRequest, null, null);
             }
 
             var token = _jwtService.GenerateToken(user);
-            return (HttpStatusCode.OK, token);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(7);
+
+            await _userRepository.UpdateUserAsync(user);
+
+            _jwtService.SetRefreshTokenInCookie(refreshToken);
+
+            return (HttpStatusCode.OK, token, refreshToken);
+        }
+
+        public async Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync(string token, string refreshToken)
+        {
+            var principal = _jwtService.GetPrincipalFromExpiredToken(token);
+            var userId = GetCurrentUserId();
+
+            if (!await _jwtService.ValidateRefreshTokenAsync(userId, refreshToken))
+            {
+                return (HttpStatusCode.Unauthorized, null, null);
+            }
+
+            var user = await GetUserByIdAsync(userId);
+            var newToken = _jwtService.GenerateToken(user);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(7);
+            await _userRepository.UpdateUserAsync(user);
+
+            return (HttpStatusCode.OK, newToken, newRefreshToken);
         }
 
         public async Task<HttpStatusCode> UpdateUserByIdAsync(Guid id, UpdateUserDTO model, ClaimsPrincipal userClaim)

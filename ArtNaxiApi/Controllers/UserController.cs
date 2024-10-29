@@ -1,5 +1,4 @@
-﻿using ArtNaxiApi.Models;
-using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +11,11 @@ namespace ArtNaxiApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IJwtService _jwtService;
+        public UserController(IUserService userService, IJwtService jwtService)
         {
             _userService = userService;
+            _jwtService = jwtService;
         }
 
         [HttpPost("register")]
@@ -33,13 +34,34 @@ namespace ArtNaxiApi.Controllers
         [HttpPost("login")]
         public async Task<ActionResult> LoginUser(LoginDto model)
         {
-            var (result, token) = await _userService.LoginUserAsync(model);
+            var (result, token, refreshToken) = await _userService.LoginUserAsync(model);
 
             return result switch
             {
                 HttpStatusCode.NotFound => NotFound("Invalid Username or Email."),
                 HttpStatusCode.BadRequest => Forbid("Invalid Password."),
-                HttpStatusCode.OK => Ok(token),
+                HttpStatusCode.OK => Ok(new { token, refreshToken }),
+                _ => BadRequest()
+            };
+        }
+
+        [HttpPost("logout")]
+        public async Task<ActionResult> Logout()
+        {
+            _jwtService.RemoveRefreshTokenFromCookie();
+
+            return Ok();
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult> RefreshToken(string token, string refreshToken)
+        {
+            var (result, newToken, newRefreshToken) = await _userService.RefreshTokenAsync(token, refreshToken);
+
+            return result switch
+            {
+                HttpStatusCode.Unauthorized => Unauthorized("Invalid refresh token."),
+                HttpStatusCode.OK => Ok(new { token = newToken, refreshToken = newRefreshToken }),
                 _ => BadRequest()
             };
         }

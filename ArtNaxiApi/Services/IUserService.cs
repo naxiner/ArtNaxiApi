@@ -9,7 +9,7 @@ namespace ArtNaxiApi.Services
     {
         Task<HttpStatusCode> RegisterUserAsync(RegistrDto model);
         Task<(HttpStatusCode, string?, string?)> LoginUserAsync(LoginDto login);
-        Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync(string token, string refreshToken);
+        Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync();
         Task<HttpStatusCode> UpdateUserByIdAsync(Guid id, UpdateUserDTO model, ClaimsPrincipal userClaim);
         Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim);
         Guid GetCurrentUserId();

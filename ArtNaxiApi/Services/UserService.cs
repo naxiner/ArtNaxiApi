@@ -81,10 +81,20 @@ namespace ArtNaxiApi.Services
             return (HttpStatusCode.OK, token, refreshToken);
         }
 
-        public async Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync(string token, string refreshToken)
+        public async Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync()
         {
+            var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return (HttpStatusCode.BadRequest, null, null);
+            }
+
+            var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
             var principal = _jwtService.GetPrincipalFromExpiredToken(token);
-            var userId = GetCurrentUserId();
+            var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var userId = Guid.Parse(userIdClaim.Value);
 
             if (!await _jwtService.ValidateRefreshTokenAsync(userId, refreshToken))
             {

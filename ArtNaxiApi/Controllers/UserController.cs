@@ -54,13 +54,14 @@ namespace ArtNaxiApi.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<ActionResult> RefreshToken(string token, string refreshToken)
+        public async Task<ActionResult> RefreshToken()
         {
-            var (result, newToken, newRefreshToken) = await _userService.RefreshTokenAsync(token, refreshToken);
+            var (result, newToken, newRefreshToken) = await _userService.RefreshTokenAsync();
 
             return result switch
             {
                 HttpStatusCode.Unauthorized => Unauthorized("Invalid refresh token."),
+                HttpStatusCode.BadRequest => Unauthorized("Refresh token is missing."),
                 HttpStatusCode.OK => Ok(new { token = newToken, refreshToken = newRefreshToken }),
                 _ => BadRequest()
             };

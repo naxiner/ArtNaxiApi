@@ -21,7 +21,7 @@ namespace ArtNaxiApi
                 {
                     // angular address
                     builder
-                        .WithOrigins("http://localhost:4200")
+                        .WithOrigins("http://localhost:4200", "https://localhost:4200")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();

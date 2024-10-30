@@ -21,6 +21,11 @@ namespace ArtNaxiApi.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> RegisterUser(RegistrDto model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _userService.RegisterUserAsync(model);
 
             return result switch

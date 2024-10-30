@@ -15,6 +15,7 @@ namespace ArtNaxiApi.Models
 
         [Required]
         [EmailAddress]
+        [MaxLength(32)]
         public string Email { get; set; }
 
         [Required]

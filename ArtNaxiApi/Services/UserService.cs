@@ -42,7 +42,8 @@ namespace ArtNaxiApi.Services
                 PasswordHash = HashPassword(model.Password),
                 Role = Roles.User,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                RefreshToken = String.Empty
             };
 
             await _userRepository.AddUserAsync(user);

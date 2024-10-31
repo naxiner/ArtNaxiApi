@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <ProjectReference Include="..\ArtNaxiApi\ArtNaxiApi.csproj" />
   </ItemGroup>
 
 </Project>

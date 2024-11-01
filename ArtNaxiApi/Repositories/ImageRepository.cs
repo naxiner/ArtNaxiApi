@@ -45,6 +45,13 @@ namespace ArtNaxiApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<int> GetTotalImagesCountByUserIdAsync(Guid userId)
+        {
+            return await _context.Images
+                .Where(image => image.UserId == userId)
+                .CountAsync();
+        }
+
         public async Task<IEnumerable<Image>> GetRecentImagesAsync(int count)
         {
             return await _context.Images

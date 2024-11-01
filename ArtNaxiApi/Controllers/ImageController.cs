@@ -43,7 +43,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<(IEnumerable<Image>, int)>> GetImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
         {
             var userImages = await _imageRepository.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
 
@@ -52,7 +52,10 @@ namespace ArtNaxiApi.Controllers
                 return NotFound();
             }
 
-            return Ok(userImages);
+            var totalImagesCount = await _imageRepository.GetTotalImagesCountByUserIdAsync(userId);
+            var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
+
+            return Ok(new { userImages, totalPages });
         }
 
         [HttpGet("recent")]

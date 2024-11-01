@@ -34,6 +34,17 @@ namespace ArtNaxiApi.Repositories
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
+        public async Task<IEnumerable<Image>> GetImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
+        {
+            return await _context.Images
+                .Where(i => i.UserId == userId)
+                .OrderByDescending(i => i.CreationTime)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(i => i.Request)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Image>> GetRecentImagesAsync(int count)
         {
             return await _context.Images

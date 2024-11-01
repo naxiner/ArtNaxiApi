@@ -23,10 +23,10 @@ namespace ArtNaxiApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Image>>> GetAllImagesAsync()
+        public async Task<ActionResult<IEnumerable<Image>>> GetAllImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var allImages = await _imageRepository.GetAllImagesAsync();
-            return Ok(allImages);
+            var pageOfImages = await _imageRepository.GetAllImagesAsync(pageNumber, pageSize);
+            return Ok(pageOfImages);
         }
 
         [HttpGet("{id}")]

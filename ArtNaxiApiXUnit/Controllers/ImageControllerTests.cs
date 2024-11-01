@@ -45,7 +45,8 @@ namespace ArtNaxiApiXUnit.Controllers
                 new Image { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, UserId = Guid.NewGuid(), Request = new SDRequest() }
             };
 
-            _imageRepositoryMock.Setup(repo => repo.GetAllImagesAsync()).ReturnsAsync(images);
+            int pageNumber = 1, pageSize = 10;
+            _imageRepositoryMock.Setup(repo => repo.GetAllImagesAsync(pageNumber, pageSize)).ReturnsAsync(images);
 
             var result = await _imageController.GetAllImagesAsync();
 

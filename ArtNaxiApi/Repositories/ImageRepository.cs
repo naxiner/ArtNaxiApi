@@ -18,9 +18,11 @@ namespace ArtNaxiApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetAllImagesAsync()
+        public async Task<IEnumerable<Image>> GetAllImagesAsync(int pageNumber, int pageSize)
         {
             return await _context.Images
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Include(i => i.Request)
                 .ToListAsync();
         }

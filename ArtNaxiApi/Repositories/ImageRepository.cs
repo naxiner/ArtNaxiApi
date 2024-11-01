@@ -29,11 +29,18 @@ namespace ArtNaxiApi.Repositories
 
         public async Task<Image?> GetImageByIdAsync(Guid id)
         {
-            var imageById = await _context.Images
+            return await _context.Images
                 .Include(i => i.Request)
                 .FirstOrDefaultAsync(i => i.Id == id);
+        }
 
-            return imageById;
+        public async Task<IEnumerable<Image>> GetRecentImagesAsync(int count)
+        {
+            return await _context.Images
+                .OrderByDescending(i => i.CreationTime)
+                .Take(count)
+                .Include(i => i.Request)
+                .ToListAsync();
         }
 
         public async Task DeleteImageByIdAsync(Guid id)

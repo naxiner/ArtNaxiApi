@@ -42,6 +42,13 @@ namespace ArtNaxiApi.Controllers
             return Ok(imageById);
         }
 
+        [HttpGet("recent")]
+        public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int count = 10)
+        {
+            var recentImages = await _imageRepository.GetRecentImagesAsync(count);
+            return Ok(recentImages);
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)

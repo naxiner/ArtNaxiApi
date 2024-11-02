@@ -59,9 +59,9 @@ namespace ArtNaxiApi.Controllers
         }
 
         [HttpGet("recent")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int count = 10)
+        public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var recentImages = await _imageRepository.GetRecentImagesAsync(count);
+            var recentImages = await _imageRepository.GetRecentImagesAsync(pageNumber, pageSize);
             return Ok(recentImages);
         }
 

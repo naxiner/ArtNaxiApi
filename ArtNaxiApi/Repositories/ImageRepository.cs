@@ -52,11 +52,12 @@ namespace ArtNaxiApi.Repositories
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetRecentImagesAsync(int count)
+        public async Task<IEnumerable<Image>> GetRecentImagesAsync(int pageNumber, int pageSize)
         {
             return await _context.Images
                 .OrderByDescending(i => i.CreationTime)
-                .Take(count)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Include(i => i.Request)
                 .ToListAsync();
         }

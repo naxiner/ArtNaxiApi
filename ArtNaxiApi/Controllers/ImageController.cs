@@ -69,10 +69,10 @@ namespace ArtNaxiApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
         {
-            var (result, imagePath) = await _sdService.GenerateImageAsync(sdRequest);
+            var (result, image) = await _sdService.GenerateImageAsync(sdRequest);
             return result switch
             {
-                HttpStatusCode.OK => Ok(new { imagePath }),
+                HttpStatusCode.OK => Ok(image),
                 HttpStatusCode.InternalServerError => StatusCode(500, "Error when saving image."),
                 HttpStatusCode.ServiceUnavailable => StatusCode(503, "Stable Diffussion server Unavaliable."),
                 _ => BadRequest()

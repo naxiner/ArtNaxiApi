@@ -110,20 +110,28 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
-            var imagePath = "/Images/generated_image.png";
+            var expectedImage = new Image
+            {
+                Id = Guid.NewGuid(),
+                Url = "/Images/generated_image.png",
+                CreationTime = DateTime.Now,
+                Request = sdRequest,
+                UserId = Guid.NewGuid()
+            };
+
             _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
-                .ReturnsAsync((HttpStatusCode.OK, imagePath));
+                .ReturnsAsync((HttpStatusCode.OK, expectedImage));
 
             var result = await _imageController.GenerateImage(sdRequest);
 
             var actionResult = Assert.IsType<ActionResult<Image>>(result);
             var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
 
-            var returnValue = okResult.Value;
-
-            var imagePathValue = returnValue.GetType().GetProperty("imagePath")?.GetValue(returnValue);
-
-            Assert.Equal(imagePath, imagePathValue);
+            var returnValue = Assert.IsType<Image>(okResult.Value);
+            Assert.Equal(expectedImage.Id, returnValue.Id);
+            Assert.Equal(expectedImage.Url, returnValue.Url);
+            Assert.Equal(expectedImage.Request, returnValue.Request);
+            Assert.Equal(expectedImage.UserId, returnValue.UserId);
         }
 
         [Fact]

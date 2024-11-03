@@ -6,7 +6,7 @@ namespace ArtNaxiApi.Services
 {
     public interface ISDService
     {
-        Task<(HttpStatusCode, string?)> GenerateImageAsync(SDRequest request);
+        Task<(HttpStatusCode, Image?)> GenerateImageAsync(SDRequest request);
         Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user);
     }
 }

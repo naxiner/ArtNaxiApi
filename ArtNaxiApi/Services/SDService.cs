@@ -33,7 +33,7 @@ namespace ArtNaxiApi.Services
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
-        public async Task<(HttpStatusCode, string?)> GenerateImageAsync(SDRequest request)
+        public async Task<(HttpStatusCode, Image?)> GenerateImageAsync(SDRequest request)
         {
             // api url text to image generation
             var urlTxt2Img = _apiUrlTextToImg;
@@ -87,7 +87,7 @@ namespace ArtNaxiApi.Services
             await _imageRepository.AddImageAsync(image);
             await _userProfileRepository.UpdateAsync(userProfile);
 
-            return (HttpStatusCode.OK, imagePath);
+            return (HttpStatusCode.OK, image);
         }
 
         public async Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user)

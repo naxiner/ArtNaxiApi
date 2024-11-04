@@ -26,13 +26,13 @@ namespace ArtNaxiApi.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<HttpStatusCode> RegisterUserAsync(RegistrDto model)
+        public async Task<(HttpStatusCode, string?)> RegisterUserAsync(RegistrDto model)
         {
             if (await _userRepository.GetUserByNameAsync(model.Username) != null ||
                 await _userRepository.GetUserByEmailAsync(model.Email) != null)
             {
                 // User with that Username or Email already exist
-                return HttpStatusCode.Conflict;
+                return (HttpStatusCode.Conflict, null);
             }
 
             var user = new User
@@ -46,11 +46,12 @@ namespace ArtNaxiApi.Services
                 RefreshToken = String.Empty
             };
 
+            var token = _jwtService.GenerateToken(user);
             await _userRepository.AddUserAsync(user);
 
             await _userProfileService.CreateProfileAsync(user.Id);
 
-            return HttpStatusCode.OK;
+            return (HttpStatusCode.OK, token);
         }
 
         public async Task<(HttpStatusCode, string?, string?)> LoginUserAsync(LoginDto model)

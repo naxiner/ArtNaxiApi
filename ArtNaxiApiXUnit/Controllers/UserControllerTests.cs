@@ -33,14 +33,26 @@ namespace ArtNaxiApiXUnit.Controllers
                 Email = "example@example.com",
                 Password = "Test123!"
             };
-            
+
+            var token = "generated_token";
             _userServiceMock.Setup(service => service.RegisterUserAsync(model))
-                .ReturnsAsync(HttpStatusCode.OK);
+                .ReturnsAsync((HttpStatusCode.OK, token));
 
             var result = await _userController.RegisterUser(model);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("User register successful.", okResult.Value);
+            var response = Assert.IsType<OkObjectResult>(result).Value;
+
+            var messageProperty = response.GetType().GetProperty("message");
+            var tokenProperty = response.GetType().GetProperty("token");
+
+            Assert.NotNull(messageProperty);
+            Assert.NotNull(tokenProperty);
+            var responseMessage = messageProperty.GetValue(response);
+            var responseToken = tokenProperty.GetValue(response);
+
+            Assert.Equal("User register successful.", responseMessage);
+            Assert.Equal(token, responseToken);
         }
 
         [Fact]
@@ -66,15 +78,15 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsConflict_WhenUsernameIsExist()
         {
-            _userServiceMock.Setup(service => service.RegisterUserAsync(It.Is<RegistrDto>(dto => dto.Username == "existingUsername")))
-                    .ReturnsAsync(HttpStatusCode.Conflict);
-
             var model = new RegistrDto
             {
                 Username = "existingUsername",
                 Email = "example@example.com",
                 Password = "Test123!"
             };
+
+            _userServiceMock.Setup(service => service.RegisterUserAsync(model))
+                .ReturnsAsync((HttpStatusCode.Conflict, "User with that Username or Email already exist."));
 
             var result = await _userController.RegisterUser(model);
 
@@ -108,15 +120,15 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsConflict_WhenEmailIsExist()
         {
-            _userServiceMock.Setup(service => service.RegisterUserAsync(It.Is<RegistrDto>(dto => dto.Email == "existing@example.com")))
-                    .ReturnsAsync(HttpStatusCode.Conflict);
-
             var model = new RegistrDto
             {
                 Username = "NewUser",
                 Email = "existing@example.com",
                 Password = "Test123!"
             };
+
+            _userServiceMock.Setup(service => service.RegisterUserAsync(model))
+                .ReturnsAsync((HttpStatusCode.Conflict, "User with that Username or Email already exist."));
 
             var result = await _userController.RegisterUser(model);
 

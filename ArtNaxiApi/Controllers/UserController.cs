@@ -26,12 +26,12 @@ namespace ArtNaxiApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.RegisterUserAsync(model);
+            var (result, token) = await _userService.RegisterUserAsync(model);
 
             return result switch
             {
                 HttpStatusCode.Conflict => Conflict("User with that Username or Email already exist."),
-                HttpStatusCode.OK => Ok("User register successful."),
+                HttpStatusCode.OK => Ok(new { message = "User register successful.", token }),
                 _ => BadRequest()
             };
         }

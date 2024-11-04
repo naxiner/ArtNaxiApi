@@ -7,5 +7,6 @@ namespace ArtNaxiApi.Services
     {
         Task CreateProfileAsync(Guid userId);
         Task<(HttpStatusCode, UserProfileDto?)> GetProfileByUserIdAsync(Guid userId);
+        Task<(HttpStatusCode, string?)> GetProfileAvatarByUserIdAsync(Guid userId);
     }
 }

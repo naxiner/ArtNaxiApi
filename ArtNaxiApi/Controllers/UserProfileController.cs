@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -23,6 +24,19 @@ namespace ArtNaxiApi.Controllers
             {
                 HttpStatusCode.NotFound => NotFound("User with this Id not found."),
                 HttpStatusCode.OK => Ok(userProfileDto),
+                _ => BadRequest()
+            };
+        }
+
+        [HttpGet("avatar/{id}")]
+        public async Task<ActionResult> GetUserAvatarByIdAsync(Guid id)
+        {
+            var (result, userAvatarUrl) = await _userProfileService.GetProfileAvatarByUserIdAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.NotFound => NotFound(new { message = "Avatar not found.", userAvatarUrl }),
+                HttpStatusCode.OK => Ok(new { userAvatarUrl }),
                 _ => BadRequest()
             };
         }

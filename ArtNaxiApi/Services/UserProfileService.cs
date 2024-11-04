@@ -9,6 +9,7 @@ namespace ArtNaxiApi.Services
     {
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IConfiguration _configuration;
+
         public UserProfileService(IUserProfileRepository userProfileRepository, IConfiguration configuration)
         {
             _userProfileRepository = userProfileRepository;
@@ -39,6 +40,19 @@ namespace ArtNaxiApi.Services
             var userProfileDto = MapToUserProfileDto(userProfile);
             
             return (HttpStatusCode.OK, userProfileDto);
+        }
+
+        public async Task<(HttpStatusCode, string?)> GetProfileAvatarByUserIdAsync(Guid userId)
+        {
+            var userAvatar = await _userProfileRepository.GetProfileAvatarByUserIdAsync(userId);
+            
+            if (userAvatar == null)
+            {
+                userAvatar = _configuration["FrontendSettings:DefualtAvatarUrl"]!;
+                return (HttpStatusCode.NotFound, userAvatar);
+            }
+
+            return (HttpStatusCode.OK, userAvatar);
         }
 
         private UserProfileDto MapToUserProfileDto(UserProfile userProfile)

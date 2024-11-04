@@ -6,6 +6,7 @@ namespace ArtNaxiApi.Repositories
     {
         Task AddProfileAsync(UserProfile profile);
         Task<UserProfile> GetProfileByUserIdAsync(Guid userId);
+        Task<string?> GetProfileAvatarByUserIdAsync(Guid userId);
         Task UpdateAsync(UserProfile profile);
     }
 }

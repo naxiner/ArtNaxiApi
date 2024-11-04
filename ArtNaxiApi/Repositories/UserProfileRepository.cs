@@ -29,6 +29,14 @@ namespace ArtNaxiApi.Repositories
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
+        public async Task<string?> GetProfileAvatarByUserIdAsync(Guid userId)
+        {
+            return await _context.UserProfiles
+                .Where(p => p.UserId == userId)
+                .Select(ppu => ppu.ProfilePictureUrl)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task UpdateAsync(UserProfile profile)
         {
             _context.UserProfiles.Update(profile);

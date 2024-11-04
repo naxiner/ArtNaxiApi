@@ -8,17 +8,21 @@ namespace ArtNaxiApi.Services
     public class UserProfileService : IUserProfileService
     {
         private readonly IUserProfileRepository _userProfileRepository;
-        public UserProfileService(IUserProfileRepository userProfileRepository)
+        private readonly IConfiguration _configuration;
+        public UserProfileService(IUserProfileRepository userProfileRepository, IConfiguration configuration)
         {
             _userProfileRepository = userProfileRepository;
+            _configuration = configuration;
         }
 
         public async Task CreateProfileAsync(Guid userId)
         {
+            string defaultAvatarUrl = _configuration["FrontendSettings:DefualtAvatarUrl"]!;
+
             var profile = new UserProfile
             {
                 UserId = userId,
-                ProfilePictureUrl = string.Empty
+                ProfilePictureUrl = defaultAvatarUrl
             };
 
             await _userProfileRepository.AddProfileAsync(profile);

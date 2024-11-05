@@ -80,6 +80,36 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("{id}/make-public")]
+        public async Task<ActionResult> MakeImagePublic(Guid id)
+        {
+            var result = await _sdService.MakeImagePublicAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.OK => Ok("Image visibility changed to public succesful."),
+                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.Forbidden => Forbid(),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPost("{id}/make-private")]
+        public async Task<ActionResult> MakeImagePrivate(Guid id)
+        {
+            var result = await _sdService.MakeImagePrivateAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.OK => Ok("Image visibility changed to private succesful."),
+                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.Forbidden => Forbid(),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {

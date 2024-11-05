@@ -80,6 +80,17 @@ namespace ArtNaxiApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Image>> GetRecentPublicImagesAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Images
+                .Where(i => i.IsPublic)
+                .OrderByDescending(i => i.CreationTime)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(i => i.Request)
+                .ToListAsync();
+        }
+
         public async Task DeleteImageByIdAsync(Guid id)
         {
             var imageById = await _context.Images.FindAsync(id);

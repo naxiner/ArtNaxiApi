@@ -83,6 +83,14 @@ namespace ArtNaxiApi.Controllers
             return Ok(recentImages);
         }
 
+        [HttpGet("recent/public")]
+        public async Task<ActionResult<IEnumerable<Image>>> GetRecentPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            var recentImages = await _imageRepository.GetRecentPublicImagesAsync(pageNumber, pageSize);
+
+            return Ok(recentImages);
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
@@ -106,7 +114,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok("Image visibility changed to public succesful."),
+                HttpStatusCode.OK => Ok(),
                 HttpStatusCode.NotFound => NotFound("Image not found."),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
@@ -121,7 +129,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok("Image visibility changed to private succesful."),
+                HttpStatusCode.OK => Ok(),
                 HttpStatusCode.NotFound => NotFound("Image not found."),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()

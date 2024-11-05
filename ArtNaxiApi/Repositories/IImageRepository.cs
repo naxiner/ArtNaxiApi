@@ -8,8 +8,11 @@ namespace ArtNaxiApi.Repositories
         Task<IEnumerable<Image>> GetAllImagesAsync(int pageNumber, int pageSize);
         Task<Image?> GetImageByIdAsync(Guid id);
         Task<IEnumerable<Image>> GetImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize);
+        Task<IEnumerable<Image>> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize);
         Task<int> GetTotalImagesCountByUserIdAsync(Guid userId);
+        Task<int> GetTotalPublicImagesCountByUserIdAsync(Guid userId);
         Task<IEnumerable<Image>> GetRecentImagesAsync(int pageNumber, int pageSize);
         Task DeleteImageByIdAsync(Guid id);
+        Task SetImageVisibilityAsync(Guid id, bool isPublic);
     }
 }

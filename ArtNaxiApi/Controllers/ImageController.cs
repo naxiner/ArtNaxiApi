@@ -26,6 +26,7 @@ namespace ArtNaxiApi.Controllers
         public async Task<ActionResult<IEnumerable<Image>>> GetAllImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
             var pageOfImages = await _imageRepository.GetAllImagesAsync(pageNumber, pageSize);
+            
             return Ok(pageOfImages);
         }
 
@@ -58,10 +59,27 @@ namespace ArtNaxiApi.Controllers
             return Ok(new { userImages, totalPages });
         }
 
+        [HttpGet("user/{userId}/public")]
+        public async Task<ActionResult<(IEnumerable<Image>, int)>> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+        {
+            var userImages = await _imageRepository.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            if (userImages == null)
+            {
+                return NotFound();
+            }
+
+            var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountByUserIdAsync(userId);
+            var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
+
+            return Ok(new { userImages, totalPages });
+        }
+
         [HttpGet("recent")]
         public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
             var recentImages = await _imageRepository.GetRecentImagesAsync(pageNumber, pageSize);
+            
             return Ok(recentImages);
         }
 
@@ -70,11 +88,42 @@ namespace ArtNaxiApi.Controllers
         public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
         {
             var (result, image) = await _sdService.GenerateImageAsync(sdRequest);
+            
             return result switch
             {
                 HttpStatusCode.OK => Ok(image),
                 HttpStatusCode.InternalServerError => StatusCode(500, "Error when saving image."),
                 HttpStatusCode.ServiceUnavailable => StatusCode(503, "Stable Diffussion server Unavaliable."),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPost("{id}/make-public")]
+        public async Task<ActionResult> MakeImagePublic(Guid id)
+        {
+            var result = await _sdService.MakeImagePublicAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.OK => Ok("Image visibility changed to public succesful."),
+                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.Forbidden => Forbid(),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPost("{id}/make-private")]
+        public async Task<ActionResult> MakeImagePrivate(Guid id)
+        {
+            var result = await _sdService.MakeImagePrivateAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.OK => Ok("Image visibility changed to private succesful."),
+                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
             };
         }

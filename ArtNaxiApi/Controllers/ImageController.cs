@@ -99,7 +99,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}/make-public")]
+        [HttpPut("{id}/make-public")]
         public async Task<ActionResult> MakeImagePublic(Guid id)
         {
             var result = await _sdService.MakeImagePublicAsync(id);
@@ -114,7 +114,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}/make-private")]
+        [HttpPut("{id}/make-private")]
         public async Task<ActionResult> MakeImagePrivate(Guid id)
         {
             var result = await _sdService.MakeImagePrivateAsync(id);

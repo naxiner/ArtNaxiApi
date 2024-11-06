@@ -2,6 +2,7 @@
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
 using System.Net;
+using System.Security.Claims;
 
 namespace ArtNaxiApi.Services
 {
@@ -9,11 +10,16 @@ namespace ArtNaxiApi.Services
     {
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserProfileService(IUserProfileRepository userProfileRepository, IConfiguration configuration)
+        public UserProfileService(
+            IUserProfileRepository userProfileRepository,
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userProfileRepository = userProfileRepository;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task CreateProfileAsync(Guid userId)
@@ -53,6 +59,38 @@ namespace ArtNaxiApi.Services
             }
 
             return (HttpStatusCode.OK, userAvatar);
+        }
+
+        public async Task<HttpStatusCode> UpdateProfileAvatarByUserIdAsync(Guid userId, IFormFile avatarFile)
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+            var currentUserId = Guid.Parse(userIdClaim.Value);
+
+            if (userId != currentUserId)
+            {
+                return HttpStatusCode.Forbidden;   // Not allowed to update
+            }
+
+            if (avatarFile == null || avatarFile.Length == 0)
+            {
+                return HttpStatusCode.BadRequest;   // No file uploaded
+            }
+
+            var fileName = $"{userId}.png";
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatars", fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await avatarFile.CopyToAsync(stream);
+            }
+
+            var avatarRelativeUrl = $"/avatars/{fileName}";
+
+            var request = _httpContextAccessor.HttpContext.Request;
+            var avatarUrl = $"{request.Scheme}://{request.Host}{avatarRelativeUrl}";
+            await _userProfileRepository.UpdateAvatarAsync(userId, avatarUrl);
+
+            return HttpStatusCode.OK;
         }
 
         private UserProfileDto MapToUserProfileDto(UserProfile userProfile)

@@ -16,6 +16,12 @@ namespace ArtNaxiApi.Validation
         {
             var password = value as string;
 
+            // it needed for NewPassword validation
+            if (string.IsNullOrEmpty(password))
+            {
+                return ValidationResult.Success;
+            }
+
             if (string.IsNullOrEmpty(password) || password.Length < 8)
             {
                 return new ValidationResult("Password must be at least 8 characters long.");

@@ -18,5 +18,8 @@ namespace ArtNaxiApi.Models.DTO
         [Required(ErrorMessage = "Password is required.")]
         [PasswordComplexity]
         public string Password { get; set; }
+
+        [PasswordComplexity]
+        public string? NewPassword { get; set; }
     }
 }

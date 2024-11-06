@@ -76,6 +76,7 @@ namespace ArtNaxiApi.Services
             {
                 Url = imagePath,
                 CreationTime = DateTime.Now,
+                CreatedBy = currentUser.Username,
                 Request = request,
                 User = currentUser,
                 UserId = userId

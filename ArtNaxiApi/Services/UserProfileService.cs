@@ -61,6 +61,7 @@ namespace ArtNaxiApi.Services
             {
                 Id = userProfile.Id,
                 Username = userProfile.User.Username,
+                Email = userProfile.User.Email,
                 ProfilePictureUrl = userProfile.ProfilePictureUrl,
                 Images = userProfile.Images.Select(image => new ImageDto
                 {

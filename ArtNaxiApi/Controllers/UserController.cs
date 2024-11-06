@@ -80,11 +80,12 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound("User not found."),
-                HttpStatusCode.Conflict => Conflict("Username or email already exist for another user."),
+                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
+                HttpStatusCode.Conflict => Conflict(new { message = "Username or email already exist for another user." }),
+                HttpStatusCode.BadRequest => BadRequest(new { message = "Password is not correct." }),
                 HttpStatusCode.Forbidden => Forbid(),
                 HttpStatusCode.NoContent => NoContent(),
-                HttpStatusCode.OK => Ok("User updated successfully."),
+                HttpStatusCode.OK => Ok(new { message = "User updated successfully." }),
                 _ => BadRequest()
             };
         }

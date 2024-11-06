@@ -142,22 +142,34 @@ namespace ArtNaxiApi.Services
 
             bool updated = false;
 
-            if (!string.IsNullOrEmpty(model.Username) && user.Username != model.Username)
-            {
-                user.Username = model.Username;
-                updated = true;
-            }
-
-            if (!string.IsNullOrEmpty(model.Email) && user.Email != model.Email)
-            {
-                user.Email = model.Email;
-                updated = true;
-            }
-
             if (!string.IsNullOrEmpty(model.Password))
             {
-                user.PasswordHash = HashPassword(model.Password);
-                updated = true;
+                var verify = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
+
+                if (verify)
+                {
+                    if (!string.IsNullOrEmpty(model.Username) && user.Username != model.Username)
+                    {
+                        user.Username = model.Username;
+                        updated = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(model.Email) && user.Email != model.Email)
+                    {
+                        user.Email = model.Email;
+                        updated = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(model.NewPassword))
+                    {
+                        user.PasswordHash = HashPassword(model.NewPassword);
+                        updated = true;
+                    }
+                }
+                else
+                {
+                    return HttpStatusCode.BadRequest; // Password is not correct
+                }
             }
 
             if (updated)

@@ -46,13 +46,23 @@ namespace ArtNaxiApi.Repositories
         public async Task UpdateAvatarAsync(Guid userId, string avatarUrl)
         {
             var userProfile = await _context.UserProfiles
-                .Where(up => up.UserId == userId)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(up => up.UserId == userId);
 
             userProfile.ProfilePictureUrl = avatarUrl;
 
             _context.UserProfiles.Update(userProfile);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetPublicImageCountAsync(Guid userId)
+        {
+            var userProfile = await _context.UserProfiles
+                .Include(up => up.Images)
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            var publicImages = userProfile.Images?.Count(img => img.IsPublic) ?? 0;
+
+            return publicImages;
         }
     }
 }

@@ -44,14 +44,14 @@ namespace ArtNaxiApi.Services
             }
 
             var userProfileDto = MapToUserProfileDto(userProfile);
-            
+
             return (HttpStatusCode.OK, userProfileDto);
         }
 
         public async Task<(HttpStatusCode, string?)> GetProfileAvatarByUserIdAsync(Guid userId)
         {
             var userAvatar = await _userProfileRepository.GetProfileAvatarByUserIdAsync(userId);
-            
+
             if (userAvatar == null)
             {
                 userAvatar = _configuration["FrontendSettings:DefualtAvatarUrl"]!;
@@ -105,10 +105,17 @@ namespace ArtNaxiApi.Services
 
             var avatarRelativeUrl = $"/avatars/{newFileName}";
             var avatarUrl = schemeHost + avatarRelativeUrl;
-            
+
             await _userProfileRepository.UpdateAvatarAsync(userId, avatarUrl);
 
             return (HttpStatusCode.OK, avatarUrl);
+        }
+
+        public async Task<int> GetPublicImageCountByUserIdAsync(Guid id)
+        {
+            var imageCount = await _userProfileRepository.GetPublicImageCountAsync(id);
+
+            return imageCount;
         }
 
         private UserProfileDto MapToUserProfileDto(UserProfile userProfile)

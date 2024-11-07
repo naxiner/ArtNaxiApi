@@ -10,5 +10,6 @@ namespace ArtNaxiApi.Repositories
         Task<string?> GetProfileAvatarByUserIdAsync(Guid userId);
         Task UpdateAsync(UserProfile profile);
         Task UpdateAvatarAsync(Guid userId, string avatarUrl);
+        Task<int> GetPublicImageCountAsync(Guid userId);
     }
 }

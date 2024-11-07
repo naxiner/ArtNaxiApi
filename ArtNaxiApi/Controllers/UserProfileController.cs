@@ -1,5 +1,5 @@
-﻿using ArtNaxiApi.Models.DTO;
-using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -37,6 +37,21 @@ namespace ArtNaxiApi.Controllers
             {
                 HttpStatusCode.NotFound => NotFound(new { message = "Avatar not found.", userAvatarUrl }),
                 HttpStatusCode.OK => Ok(new { userAvatarUrl }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPut("avatar/{id}")]
+        public async Task<ActionResult> UpdateProfileAvatarById(Guid id, IFormFile avatarFile)
+        {
+            var (result, profilePictureUrl) = await _userProfileService.UpdateProfileAvatarByUserIdAsync(id, avatarFile);
+
+            return result switch
+            {
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.BadRequest => BadRequest(new { message = "No file uploaded" }),
+                HttpStatusCode.OK => Ok(new { message = "Avatar updated successful.", profilePictureUrl }),
                 _ => BadRequest()
             };
         }

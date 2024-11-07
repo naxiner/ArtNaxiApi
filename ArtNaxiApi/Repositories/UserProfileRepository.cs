@@ -42,5 +42,17 @@ namespace ArtNaxiApi.Repositories
             _context.UserProfiles.Update(profile);
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateAvatarAsync(Guid userId, string avatarUrl)
+        {
+            var userProfile = await _context.UserProfiles
+                .Where(up => up.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            userProfile.ProfilePictureUrl = avatarUrl;
+
+            _context.UserProfiles.Update(userProfile);
+            await _context.SaveChangesAsync();
+        }
     }
 }

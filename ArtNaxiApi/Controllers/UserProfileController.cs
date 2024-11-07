@@ -45,13 +45,13 @@ namespace ArtNaxiApi.Controllers
         [HttpPut("avatar/{id}")]
         public async Task<ActionResult> UpdateProfileAvatarById(Guid id, IFormFile avatarFile)
         {
-            var result = await _userProfileService.UpdateProfileAvatarByUserIdAsync(id, avatarFile);
+            var (result, profilePictureUrl) = await _userProfileService.UpdateProfileAvatarByUserIdAsync(id, avatarFile);
 
             return result switch
             {
                 HttpStatusCode.Forbidden => Forbid(),
                 HttpStatusCode.BadRequest => BadRequest(new { message = "No file uploaded" }),
-                HttpStatusCode.OK => Ok(new { message = "Avatar updated successful." }),
+                HttpStatusCode.OK => Ok(new { message = "Avatar updated successful.", profilePictureUrl }),
                 _ => BadRequest()
             };
         }

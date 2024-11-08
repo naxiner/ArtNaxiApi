@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace ArtNaxiApi.Models
@@ -19,6 +18,11 @@ namespace ArtNaxiApi.Models
 
         [JsonPropertyName("styles")]
         public List<string>? Styles { get; set; } = new List<string>();
+
+        [DefaultValue(-1)]
+
+        [JsonPropertyName("seed")]
+        public int Seed { get; set; } = -1;
 
         [Required]
         [JsonPropertyName("sampler_name")]

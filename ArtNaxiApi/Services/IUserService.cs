@@ -14,5 +14,6 @@ namespace ArtNaxiApi.Services
         Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim);
         Guid GetCurrentUserId();
         Task<User> GetUserByIdAsync(Guid id);
+        Task<HttpStatusCode> BanUnbanUserByIdAsync(Guid id, bool isBanned, ClaimsPrincipal userClaim);
     }
 }

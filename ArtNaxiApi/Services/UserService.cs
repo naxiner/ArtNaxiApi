@@ -218,6 +218,28 @@ namespace ArtNaxiApi.Services
             return await _userRepository.GetUserByIdAsync(id);
         }
 
+        public async Task<HttpStatusCode> BanUnbanUserByIdAsync(Guid id, bool isBanned, ClaimsPrincipal userClaim)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (id != currentUserId && !userClaim.IsInRole(Roles.Admin))
+            {
+                return HttpStatusCode.BadRequest;   // You are not allowed to Ban this user
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return HttpStatusCode.NotFound;     // User not found
+            }
+
+            user.IsBanned = isBanned;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.UpdateUserAsync(user);
+
+            return HttpStatusCode.OK;
+        }
+
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);

@@ -12,9 +12,17 @@ namespace ArtNaxiApi.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber, int pageSize)
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTotalCountUsersAsync()
+        {
+            return await _context.Users.CountAsync();
         }
 
         public async Task<User> GetUserByIdAsync(Guid id)

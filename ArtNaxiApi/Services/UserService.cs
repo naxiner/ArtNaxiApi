@@ -213,18 +213,21 @@ namespace ArtNaxiApi.Services
             return Guid.Parse(userIdClaim.Value);
         }
 
-        public async Task<(HttpStatusCode, IEnumerable<UserDto>?)> GetAllUsersAsync(ClaimsPrincipal userClaim)
+        public async Task<(HttpStatusCode, IEnumerable<UserDto>?, int)> GetAllUsersAsync(ClaimsPrincipal userClaim, int pageNumber, int pageSize)
         {
             if (!userClaim.IsInRole(Roles.Admin))
             {
-                return (HttpStatusCode.BadRequest, null);   // You are not allowed to get all users
+                return (HttpStatusCode.BadRequest, null, 0);   // You are not allowed to get all users
             }
 
-            var allUsers = await _userRepository.GetAllUsersAsync();
+            var allUsers = await _userRepository.GetAllUsersAsync(pageNumber, pageSize);
             if (allUsers == null)
             {
-                return (HttpStatusCode.NotFound, null); // Users not found
+                return (HttpStatusCode.NotFound, null, 0); // Users not found
             }
+
+            var usersCount = await _userRepository.GetTotalCountUsersAsync();
+            var totalPages = (int)Math.Ceiling(usersCount / (double)pageSize);
 
             var allUsersDto = allUsers.Select(user => new UserDto
             {
@@ -237,7 +240,7 @@ namespace ArtNaxiApi.Services
                 IsBanned = user.IsBanned
             });
 
-            return (HttpStatusCode.OK, allUsersDto);
+            return (HttpStatusCode.OK, allUsersDto, totalPages);
         }
 
         public async Task<User> GetUserByIdAsync(Guid id)

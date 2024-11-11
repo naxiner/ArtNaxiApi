@@ -107,15 +107,15 @@ namespace ArtNaxiApi.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult> GetAllUsers()
+        public async Task<ActionResult> GetAllUsers(int pageNumber = 1, int pageSize = 10)
         {
-            var (result, users) = await _userService.GetAllUsersAsync(User);
+            var (result, users, totalPages) = await _userService.GetAllUsersAsync(User, pageNumber, pageSize);
 
             return result switch
             {
                 HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to get all users." }),
                 HttpStatusCode.NotFound => NotFound(new { message = "Users not found." }),
-                HttpStatusCode.OK => Ok(new { message = "All users received successfully.", users }),
+                HttpStatusCode.OK => Ok(new { message = "All users received successfully.", users, totalPages }),
                 _ => BadRequest()
             };
         }

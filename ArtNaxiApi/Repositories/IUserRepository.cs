@@ -4,7 +4,8 @@ namespace ArtNaxiApi.Repositories
 {
     public interface IUserRepository
     {
-        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber, int pageSize);
+        Task<int> GetTotalCountUsersAsync();
         Task<User> GetUserByIdAsync(Guid id);
         Task<User> GetUserByNameAsync(string username);
         Task<User> GetUserByEmailAsync(string email);

@@ -104,5 +104,35 @@ namespace ArtNaxiApi.Controllers
                 _ => BadRequest()
             };
         }
+
+        [Authorize]
+        [HttpPost("{id}/ban")]
+        public async Task<ActionResult> BanUser(Guid id)
+        {
+            var result = await _userService.BanUnbanUserByIdAsync(id, true, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to Ban this user." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
+                HttpStatusCode.OK => Ok(new { message = "User banned successfully."}),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPost("{id}/unban")]
+        public async Task<ActionResult> UnbanUser(Guid id)
+        {
+            var result = await _userService.BanUnbanUserByIdAsync(id, false, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to Unban this user." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
+                HttpStatusCode.OK => Ok(new { message = "User unbanned successfully." }),
+                _ => BadRequest()
+            };
+        }
     }
 }

@@ -25,6 +25,7 @@ namespace ArtNaxiApi.Models
         public string Role { get; set; } = Roles.User;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsBanned { get; set; } = false;
 
         [JsonIgnore]
         public UserProfile Profile { get; set; }

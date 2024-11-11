@@ -213,6 +213,33 @@ namespace ArtNaxiApi.Services
             return Guid.Parse(userIdClaim.Value);
         }
 
+        public async Task<(HttpStatusCode, IEnumerable<UserDto>?)> GetAllUsersAsync(ClaimsPrincipal userClaim)
+        {
+            if (!userClaim.IsInRole(Roles.Admin))
+            {
+                return (HttpStatusCode.BadRequest, null);   // You are not allowed to get all users
+            }
+
+            var allUsers = await _userRepository.GetAllUsersAsync();
+            if (allUsers == null)
+            {
+                return (HttpStatusCode.NotFound, null); // Users not found
+            }
+
+            var allUsersDto = allUsers.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                IsBanned = user.IsBanned
+            });
+
+            return (HttpStatusCode.OK, allUsersDto);
+        }
+
         public async Task<User> GetUserByIdAsync(Guid id)
         {
             return await _userRepository.GetUserByIdAsync(id);

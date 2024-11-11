@@ -106,6 +106,21 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<ActionResult> GetAllUsers()
+        {
+            var (result, users) = await _userService.GetAllUsersAsync(User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to get all users." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "Users not found." }),
+                HttpStatusCode.OK => Ok(new { message = "All users received successfully.", users }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
         [HttpPost("{id}/ban")]
         public async Task<ActionResult> BanUser(Guid id)
         {

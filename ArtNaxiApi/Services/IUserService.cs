@@ -13,6 +13,7 @@ namespace ArtNaxiApi.Services
         Task<HttpStatusCode> UpdateUserByIdAsync(Guid id, UpdateUserDTO model, ClaimsPrincipal userClaim);
         Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim);
         Guid GetCurrentUserId();
+        Task<(HttpStatusCode, IEnumerable<UserDto>?)> GetAllUsersAsync(ClaimsPrincipal userClaim);
         Task<User> GetUserByIdAsync(Guid id);
         Task<HttpStatusCode> BanUnbanUserByIdAsync(Guid id, bool isBanned, ClaimsPrincipal userClaim);
     }

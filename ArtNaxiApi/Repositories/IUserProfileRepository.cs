@@ -11,5 +11,6 @@ namespace ArtNaxiApi.Repositories
         Task UpdateAsync(UserProfile profile);
         Task UpdateAvatarAsync(Guid userId, string avatarUrl);
         Task<int> GetPublicImageCountAsync(Guid userId);
+        Task DeleteUserProfileByUserIdAsync(Guid userId);
     }
 }

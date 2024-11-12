@@ -67,7 +67,27 @@ namespace ArtNaxiApi.Repositories
 
         public async Task DeleteUserAsync(User user)
         {
-            _context.Users.Remove(user);
+            var userWithProfile = await _context.Users
+                .Include(u => u.Profile)
+                .ThenInclude(p => p.Images)
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+            if (userWithProfile == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            if (userWithProfile.Profile != null)
+            {
+                _context.Images.RemoveRange(userWithProfile.Profile.Images);
+            }
+
+            if (userWithProfile.Profile != null)
+            {
+                _context.UserProfiles.Remove(userWithProfile.Profile);
+            }
+
+            _context.Users.Remove(userWithProfile);
             await _context.SaveChangesAsync();
         }
     }

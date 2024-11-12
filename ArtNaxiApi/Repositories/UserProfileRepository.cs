@@ -1,6 +1,7 @@
 ﻿using ArtNaxiApi.Data;
 using ArtNaxiApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ArtNaxiApi.Repositories
 {
@@ -63,6 +64,15 @@ namespace ArtNaxiApi.Repositories
             var publicImages = userProfile.Images?.Count(img => img.IsPublic) ?? 0;
 
             return publicImages;
+        }
+
+        public async Task DeleteUserProfileByUserIdAsync(Guid userId)
+        {
+            var userProfile = await _context.UserProfiles
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            _context.UserProfiles.Remove(userProfile);
+            await _context.SaveChangesAsync();
         }
     }
 }

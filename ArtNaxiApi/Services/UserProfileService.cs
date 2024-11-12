@@ -148,6 +148,18 @@ namespace ArtNaxiApi.Services
             return HttpStatusCode.OK;
         }
 
+        public async Task<HttpStatusCode> DeleteUserProfileByUserIdAsync(Guid userId, ClaimsPrincipal userClaim)
+        {
+            if (!userClaim.IsInRole(Roles.Admin))
+            {
+                return (HttpStatusCode.BadRequest);     // Not allowed to delete
+            }
+
+            await _userProfileRepository.DeleteUserProfileByUserIdAsync(userId);
+
+            return HttpStatusCode.OK;
+        }
+
         public async Task<int> GetPublicImageCountByUserIdAsync(Guid id)
         {
             var imageCount = await _userProfileRepository.GetPublicImageCountAsync(id);

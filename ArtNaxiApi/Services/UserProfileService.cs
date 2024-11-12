@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Constants;
+using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
 using System.Net;
@@ -109,6 +110,42 @@ namespace ArtNaxiApi.Services
             await _userProfileRepository.UpdateAvatarAsync(userId, avatarUrl);
 
             return (HttpStatusCode.OK, avatarUrl);
+        }
+
+        public async Task<HttpStatusCode> DeleteUserAvatarByUserIdAsync(Guid userId, ClaimsPrincipal userClaim)
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+            var currentUserId = Guid.Parse(userIdClaim.Value);
+
+            if (userId != currentUserId && !userClaim.IsInRole(Roles.Admin))
+            {
+                return (HttpStatusCode.BadRequest);     // Not allowed to delete
+            }
+
+            var request = _httpContextAccessor.HttpContext.Request;
+            var schemeHost = $"{request.Scheme}://{request.Host}";
+
+
+            var userAvatarUrl = await _userProfileRepository.GetProfileAvatarByUserIdAsync(userId);
+            var userAvatarRelativeUrl = userAvatarUrl.Replace(schemeHost, "");
+            var userAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", userAvatarRelativeUrl.TrimStart('/'));
+
+            if (File.Exists(userAvatarPath))
+            {
+                try
+                {
+                    File.Delete(userAvatarPath);
+                }
+                catch
+                {
+                    return (HttpStatusCode.BadRequest);
+                }
+            }
+
+            string defaultAvatarUrl = _configuration["FrontendSettings:DefualtAvatarUrl"]!;
+            await _userProfileRepository.UpdateAvatarAsync(userId, defaultAvatarUrl);
+
+            return HttpStatusCode.OK;
         }
 
         public async Task<int> GetPublicImageCountByUserIdAsync(Guid id)

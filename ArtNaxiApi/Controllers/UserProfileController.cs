@@ -56,6 +56,20 @@ namespace ArtNaxiApi.Controllers
             };
         }
 
+        [Authorize]
+        [HttpDelete("avatar/{id}")]
+        public async Task<ActionResult> DeleteUserAvatarById(Guid id)
+        {
+            var result = await _userProfileService.DeleteUserAvatarByUserIdAsync(id, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to delete this avatar." }),
+                HttpStatusCode.OK => Ok(new { message = "Avatar deleted successfully." }),
+                _ => BadRequest()
+            };
+        }
+
         [HttpGet("{id}/public-image-count")]
         public async Task <ActionResult> GetPublicImageCountById(Guid id)
         {

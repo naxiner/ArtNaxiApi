@@ -223,6 +223,7 @@ namespace ArtNaxiApi.Services
                 return HttpStatusCode.NotFound;     // User not found
             }
 
+            await _userProfileService.DeleteUserAvatarByUserIdAsync(id, userClaim);
             await _userRepository.DeleteUserAsync(user);
 
             return HttpStatusCode.OK;

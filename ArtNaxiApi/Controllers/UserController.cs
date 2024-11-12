@@ -91,6 +91,21 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("{id}/role")]
+        public async Task<ActionResult> UpdateUserRole(Guid id, string role)
+        {
+            var result = await _userService.UpdateUserRoleByIdAsync(id, role, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to set this role." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
+                HttpStatusCode.OK => Ok(new { message = "Role has been successfully assigned." }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {

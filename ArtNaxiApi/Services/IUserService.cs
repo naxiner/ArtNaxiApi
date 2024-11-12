@@ -11,6 +11,7 @@ namespace ArtNaxiApi.Services
         Task<(HttpStatusCode, string?, string?)> LoginUserAsync(LoginDto login);
         Task<(HttpStatusCode, string?, string?)> RefreshTokenAsync();
         Task<HttpStatusCode> UpdateUserByIdAsync(Guid id, UpdateUserDTO model, ClaimsPrincipal userClaim);
+        Task<HttpStatusCode> UpdateUserRoleByIdAsync(Guid id, string role, ClaimsPrincipal userClaim);
         Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim);
         Guid GetCurrentUserId();
         Task<(HttpStatusCode, IEnumerable<UserDto>?, int)> GetAllUsersAsync(ClaimsPrincipal userClaim, int pageNumber, int pageSize);

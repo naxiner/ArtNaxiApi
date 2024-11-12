@@ -2,6 +2,7 @@
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
+using ArtNaxiApi.Validation;
 using System.Net;
 using System.Security.Claims;
 
@@ -182,6 +183,32 @@ namespace ArtNaxiApi.Services
             return HttpStatusCode.NoContent;
         }
 
+        public async Task<HttpStatusCode> UpdateUserRoleByIdAsync(Guid id, string role, ClaimsPrincipal userClaim)
+        {
+            if (!userClaim.IsInRole(Roles.Admin))
+            {
+                return HttpStatusCode.BadRequest;    // You are not allowed to set roles
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return HttpStatusCode.NotFound;     // User not found
+            }
+
+            if (!RoleValidator.IsValidRole(role))
+            {
+                return HttpStatusCode.BadRequest;   // Invalid role
+            }
+
+            user.Role = role;
+            user.UpdatedAt = DateTime.UtcNow;
+            
+            await _userRepository.UpdateUserAsync(user);
+
+            return HttpStatusCode.OK;
+        }
+
         public async Task<HttpStatusCode> DeleteUserByIdAsync(Guid id, ClaimsPrincipal userClaim)
         {
             var currentUserId = GetCurrentUserId();
@@ -193,7 +220,7 @@ namespace ArtNaxiApi.Services
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
-                return HttpStatusCode.NotFound; // User not found
+                return HttpStatusCode.NotFound;     // User not found
             }
 
             await _userRepository.DeleteUserAsync(user);

@@ -4,7 +4,7 @@
     {
         public Guid Id { get; set; }
         public string Url { get; set; }
-        public DateTime CreationTime { get; set; } = DateTime.Now;
+        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
         public string CreatedBy { get; set; }
         public bool IsPublic { get; set; }
 

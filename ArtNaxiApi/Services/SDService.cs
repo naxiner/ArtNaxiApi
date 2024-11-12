@@ -75,7 +75,7 @@ namespace ArtNaxiApi.Services
             var image = new Image
             {
                 Url = imagePath,
-                CreationTime = DateTime.Now,
+                CreationTime = DateTime.UtcNow,
                 CreatedBy = currentUser.Username,
                 Request = request,
                 User = currentUser,
@@ -83,7 +83,7 @@ namespace ArtNaxiApi.Services
             };
 
             userProfile.Images.Add(image);
-            userProfile.UpdatedAt = DateTime.Now;
+            userProfile.UpdatedAt = DateTime.UtcNow;
 
             await _imageRepository.AddImageAsync(image);
             await _userProfileRepository.UpdateAsync(userProfile);

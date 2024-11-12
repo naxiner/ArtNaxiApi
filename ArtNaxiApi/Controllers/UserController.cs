@@ -113,9 +113,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest("You are not allowed to delete this user."),
-                HttpStatusCode.NotFound => NotFound("User not found."),
-                HttpStatusCode.OK => Ok("User deleted successfully."),
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to delete this user." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
+                HttpStatusCode.OK => Ok(new { message = "User deleted successfully." }),
                 _ => BadRequest()
             };
         }

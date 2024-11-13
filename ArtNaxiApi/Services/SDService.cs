@@ -5,6 +5,7 @@ using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Constants;
 using System.Security.Claims;
 using System.Net;
+using ArtNaxiApi.Models.DTO;
 
 namespace ArtNaxiApi.Services
 {
@@ -33,7 +34,7 @@ namespace ArtNaxiApi.Services
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
-        public async Task<(HttpStatusCode, Image?)> GenerateImageAsync(SDRequest request)
+        public async Task<(HttpStatusCode, ImageDto?)> GenerateImageAsync(SDRequest request)
         {
             // api url text to image generation
             var urlTxt2Img = _apiUrlTextToImg;
@@ -88,7 +89,16 @@ namespace ArtNaxiApi.Services
             await _imageRepository.AddImageAsync(image);
             await _userProfileRepository.UpdateAsync(userProfile);
 
-            return (HttpStatusCode.OK, image);
+            var imageDto = new ImageDto
+            {
+                Id = image.Id,
+                Url = image.Url,
+                CreationTime = image.CreationTime,
+                CreatedBy = image.CreatedBy,
+                Request = image.Request
+            };
+
+            return (HttpStatusCode.OK, imageDto);
         }
 
         public async Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal user)

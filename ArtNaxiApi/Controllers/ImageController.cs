@@ -93,7 +93,7 @@ namespace ArtNaxiApi.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Image>> GenerateImage(SDRequest sdRequest)
+        public async Task<ActionResult> GenerateImage(SDRequest sdRequest)
         {
             var (result, image) = await _sdService.GenerateImageAsync(sdRequest);
             

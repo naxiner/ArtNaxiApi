@@ -179,7 +179,9 @@ namespace ArtNaxiApi.Services
                 {
                     Id = image.Id,
                     Url = image.Url,
-                    CreationTime = image.CreationTime
+                    CreationTime = image.CreationTime,
+                    CreatedBy = image.CreatedBy,
+                    Request = image.Request
                 }).ToList()
             };
         }

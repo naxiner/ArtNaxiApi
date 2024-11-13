@@ -19,6 +19,9 @@ namespace ArtNaxiApi.Models
         [JsonPropertyName("styles")]
         public List<string>? Styles { get; set; } = new List<string>();
 
+        [JsonIgnore]
+        public ICollection<SDRequestStyle> SDRequestStyles { get; set; } = new List<SDRequestStyle>();
+
         [DefaultValue(-1)]
 
         [JsonPropertyName("seed")]

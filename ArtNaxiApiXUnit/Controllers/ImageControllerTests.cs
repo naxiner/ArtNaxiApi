@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Controllers;
 using ArtNaxiApi.Models;
+using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Http;
@@ -101,7 +102,7 @@ namespace ArtNaxiApiXUnit.Controllers
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = new List<string> { "Negative" },
+                Styles = null,
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,
@@ -110,13 +111,12 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
-            var expectedImage = new Image
+            var expectedImage = new ImageDto
             {
                 Id = Guid.NewGuid(),
                 Url = "/Images/generated_image.png",
                 CreationTime = DateTime.Now,
-                Request = sdRequest,
-                UserId = Guid.NewGuid()
+                Request = sdRequest
             };
 
             _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
@@ -131,7 +131,6 @@ namespace ArtNaxiApiXUnit.Controllers
             Assert.Equal(expectedImage.Id, returnValue.Id);
             Assert.Equal(expectedImage.Url, returnValue.Url);
             Assert.Equal(expectedImage.Request, returnValue.Request);
-            Assert.Equal(expectedImage.UserId, returnValue.UserId);
         }
 
         [Fact]
@@ -141,7 +140,7 @@ namespace ArtNaxiApiXUnit.Controllers
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = new List<string> { "Negative" },
+                Styles = null,
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,
@@ -169,7 +168,7 @@ namespace ArtNaxiApiXUnit.Controllers
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = new List<string> { "Negative" },
+                Styles = null,
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,

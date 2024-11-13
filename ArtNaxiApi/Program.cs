@@ -89,6 +89,7 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IImageRepository, ImageRepository>();
+            builder.Services.AddScoped<IStyleRepository, StyleRepository>();
 
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IUserService, UserService>();

@@ -13,6 +13,7 @@ namespace ArtNaxiApi.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IImageRepository _imageRepository;
+        private readonly IStyleRepository _styleRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly IUserProfileRepository _userProfileRepository;
@@ -21,6 +22,7 @@ namespace ArtNaxiApi.Services
         public SDService(
             HttpClient httpClient, 
             IImageRepository imageRepository,
+            IStyleRepository styleRepository,
             IUserRepository userRepository,
             IUserService userService,
             IUserProfileRepository userProfileRepository,
@@ -28,6 +30,7 @@ namespace ArtNaxiApi.Services
         {
             _httpClient = httpClient;
             _imageRepository = imageRepository;
+            _styleRepository = styleRepository;
             _userRepository = userRepository;
             _userService = userService;
             _userProfileRepository = userProfileRepository;
@@ -72,6 +75,21 @@ namespace ArtNaxiApi.Services
             {
                 return (HttpStatusCode.InternalServerError, null);
             }
+
+            var styleEntities = new List<Style>();
+            foreach (var styleName in request.Styles)
+            {
+                var style = await _styleRepository.GetStyleByNameAsync(styleName);
+
+                if (style != null)
+                {
+                    styleEntities.Add(style);
+                }
+            }
+
+            request.SDRequestStyles = styleEntities
+                .Select(style => new SDRequestStyle { SDRequestId = request.Id, StyleId = style.Id })
+                .ToList();
 
             var image = new Image
             {

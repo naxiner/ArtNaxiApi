@@ -9,6 +9,7 @@ namespace ArtNaxiApi.Data
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<SDRequest> SDRequests { get; set; }
+        public DbSet<Style> Styles { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
@@ -20,6 +21,19 @@ namespace ArtNaxiApi.Data
                 .WithOne(r => r.Image)
                 .HasForeignKey<SDRequest>(r => r.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SDRequestStyle>()
+                .HasKey(rs => new { rs.SDRequestId, rs.StyleId });
+
+            modelBuilder.Entity<SDRequestStyle>()
+                .HasOne(rs => rs.SDRequest)
+                .WithMany(r => r.SDRequestStyles)
+                .HasForeignKey(rs => rs.SDRequestId);
+
+            modelBuilder.Entity<SDRequestStyle>()
+                .HasOne(rs => rs.Style)
+                .WithMany(s => s.SDRequestStyles)
+                .HasForeignKey(rs => rs.StyleId);
         }
     }
 }

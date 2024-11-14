@@ -95,6 +95,7 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<ISDService, SDService>();
+            builder.Services.AddScoped<IStyleService, StyleService>();
 
             var app = builder.Build();
 

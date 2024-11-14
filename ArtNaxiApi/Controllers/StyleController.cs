@@ -1,4 +1,6 @@
-﻿using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -63,6 +65,35 @@ namespace ArtNaxiApi.Controllers
             {
                 HttpStatusCode.NotFound => NotFound(new { message = "Styles not found.", totalCount }),
                 HttpStatusCode.OK => Ok(new { totalCount }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult> AddStyleAsync(AddStyleDto addStyleDto)
+        {
+            var result = await _styleService.AddStyleAsync(addStyleDto, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to add style." }),
+                HttpStatusCode.Conflict => Conflict(new { message = "Style with that name already exist." }),
+                HttpStatusCode.OK => Ok(new { message = "Style added successfully." }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteStyleByIdAsync(Guid id)
+        {
+            var result = await _styleService.DeleteStyleByIdAsync(id, User);
+
+            return result switch
+            {
+                HttpStatusCode.NotFound => NotFound(new { message = "Style not found." }),
+                HttpStatusCode.NoContent => NoContent(),
                 _ => BadRequest()
             };
         }

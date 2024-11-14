@@ -77,17 +77,23 @@ namespace ArtNaxiApi.Services
             return (HttpStatusCode.OK, stylesCount);
         }
 
-        public async Task<HttpStatusCode> AddStyleAsync(Style style, ClaimsPrincipal userClaim)
+        public async Task<HttpStatusCode> AddStyleAsync(AddStyleDto addStyleDto, ClaimsPrincipal userClaim)
         {
             if (!userClaim.IsInRole(Roles.Admin))
             {
                 return HttpStatusCode.BadRequest;    // You are not allowed to add style
             }
 
-            if (await _styleRepository.GetStyleByNameAsync(style.Name) != null)
+            if (await _styleRepository.GetStyleByNameAsync(addStyleDto.Name) != null)
             {
                 return HttpStatusCode.Conflict;     // Style with that name already exist
             }
+
+            var style = new Style
+            {
+                Id = Guid.NewGuid(),
+                Name = addStyleDto.Name
+            };
 
             await _styleRepository.AddStyleAsync(style);
             return HttpStatusCode.OK;

@@ -58,7 +58,7 @@ namespace ArtNaxiApi.Services
                 return (HttpStatusCode.NotFound, null, 0);     // Styles not found
             }
 
-            var stylesCount = styles.Count();
+            var stylesCount = await _styleRepository.GetTotalStylesCountAsync();
             var totalPages = CountTotalPages(stylesCount, pageSize);
 
             var stylesDto = styles.Select(style => new StyleDto

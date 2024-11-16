@@ -1,4 +1,5 @@
 using ArtNaxiApi.Data;
+using ArtNaxiApi.Filters;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -95,6 +96,8 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<ISDService, SDService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
+
+            builder.Services.AddScoped<CheckBanAttribute>();
 
             var app = builder.Build();
 

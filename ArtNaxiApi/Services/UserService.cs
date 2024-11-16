@@ -64,6 +64,12 @@ namespace ArtNaxiApi.Services
                 return (HttpStatusCode.NotFound, null, null);
             }
 
+            if (user.IsBanned)
+            {
+                // User banned
+                return (HttpStatusCode.Forbidden, null, null);
+            }
+
             var verify = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
             if (!verify)
             {

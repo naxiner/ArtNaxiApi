@@ -45,6 +45,7 @@ namespace ArtNaxiApi.Controllers
             return result switch
             {
                 HttpStatusCode.NotFound => NotFound("Invalid Username or Email."),
+                HttpStatusCode.Forbidden => Forbid(),
                 HttpStatusCode.BadRequest => BadRequest("Invalid Password."),
                 HttpStatusCode.OK => Ok(new { token, refreshToken }),
                 _ => BadRequest()

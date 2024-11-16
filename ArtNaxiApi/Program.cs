@@ -17,13 +17,12 @@ namespace ArtNaxiApi
 
             builder.Services.AddCors(options =>
             {
-                string angularUrlHttp = builder.Configuration["FrontendSettings:AngularUrlHttp"]!;
                 string angularUrlHttps = builder.Configuration["FrontendSettings:AngularUrlHttps"]!;
 
                 options.AddPolicy("Cors", builder =>
                 {
                     builder
-                        .WithOrigins(angularUrlHttp, angularUrlHttps)
+                        .WithOrigins(angularUrlHttps)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();

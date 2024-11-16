@@ -26,9 +26,12 @@ namespace ArtNaxiApi.Filters
 
             var user = await _userRepository.GetUserByIdAsync(Guid.Parse(userId));
 
-            if (user == null || user.IsBanned)
+            if (user.IsBanned)
             {
-                context.Result = new ForbidResult();
+                context.Result = new JsonResult(new { message = "Your account has been banned." })
+                {
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
                 return;
             }
 

@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Filters;
+using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -70,6 +71,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost]
         public async Task<ActionResult> AddStyleAsync(AddStyleDto addStyleDto)
         {
@@ -85,6 +87,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteStyleByIdAsync(Guid id)
         {

@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models;
+﻿using ArtNaxiApi.Filters;
+using ArtNaxiApi.Models;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -92,11 +93,12 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost]
         public async Task<ActionResult> GenerateImage(SDRequest sdRequest)
         {
             var (result, image) = await _sdService.GenerateImageAsync(sdRequest);
-            
+
             return result switch
             {
                 HttpStatusCode.OK => Ok(image),
@@ -107,6 +109,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPut("{id}/make-public")]
         public async Task<ActionResult> MakeImagePublic(Guid id)
         {
@@ -122,6 +125,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPut("{id}/make-private")]
         public async Task<ActionResult> MakeImagePrivate(Guid id)
         {
@@ -137,6 +141,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {

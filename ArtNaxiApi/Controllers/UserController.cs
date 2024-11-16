@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Filters;
+using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -73,6 +74,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateUser(Guid id, UpdateUserDTO model)
         {
@@ -91,6 +93,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost("{id}/role")]
         public async Task<ActionResult> UpdateUserRole(Guid id, string role)
         {
@@ -106,6 +109,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
@@ -121,6 +125,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpGet]
         public async Task<ActionResult> GetAllUsers(int pageNumber = 1, int pageSize = 10)
         {
@@ -136,6 +141,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost("{id}/ban")]
         public async Task<ActionResult> BanUser(Guid id)
         {
@@ -151,6 +157,7 @@ namespace ArtNaxiApi.Controllers
         }
 
         [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost("{id}/unban")]
         public async Task<ActionResult> UnbanUser(Guid id)
         {

@@ -31,7 +31,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.Conflict => Conflict("User with that Username or Email already exist."),
+                HttpStatusCode.Conflict => Conflict(new { message = "User with that Username or Email already exist." }),
                 HttpStatusCode.OK => Ok(new { message = "User register successful.", token }),
                 _ => BadRequest()
             };
@@ -44,9 +44,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound("Invalid Username or Email."),
+                HttpStatusCode.NotFound => NotFound(new { message = "Invalid Username or Email." }),
                 HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.BadRequest => BadRequest("Invalid Password."),
+                HttpStatusCode.BadRequest => BadRequest(new { message = "Invalid Password." }),
                 HttpStatusCode.OK => Ok(new { token, refreshToken }),
                 _ => BadRequest()
             };
@@ -67,8 +67,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.Unauthorized => Unauthorized("Invalid refresh token."),
-                HttpStatusCode.BadRequest => Unauthorized("Refresh token is missing."),
+                HttpStatusCode.Unauthorized => Unauthorized(new { message = "Invalid refresh token." }),
+                HttpStatusCode.BadRequest => Unauthorized(new { message = "Refresh token is missing." }),
                 HttpStatusCode.OK => Ok(new { token = newToken, refreshToken = newRefreshToken }),
                 _ => BadRequest()
             };

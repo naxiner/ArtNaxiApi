@@ -22,8 +22,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound("User with this Id not found."),
-                HttpStatusCode.OK => Ok(userProfileDto),
+                HttpStatusCode.NotFound => NotFound(new { message = "User with this Id not found." }),
+                HttpStatusCode.OK => Ok(new { userProfileDto }),
                 _ => BadRequest()
             };
         }

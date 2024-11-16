@@ -28,7 +28,7 @@ namespace ArtNaxiApi.Controllers
         {
             var pageOfImages = await _imageRepository.GetAllImagesAsync(pageNumber, pageSize);
             
-            return Ok(pageOfImages);
+            return Ok(new { pageOfImages });
         }
 
         [HttpGet("{id}")]
@@ -41,7 +41,7 @@ namespace ArtNaxiApi.Controllers
                 return NotFound();
             }
 
-            return Ok(imageById);
+            return Ok(new { imageById });
         }
 
         [HttpGet("user/{userId}")]
@@ -81,7 +81,7 @@ namespace ArtNaxiApi.Controllers
         {
             var recentImages = await _imageRepository.GetRecentImagesAsync(pageNumber, pageSize);
             
-            return Ok(recentImages);
+            return Ok(new { recentImages });
         }
 
         [HttpGet("recent/public")]
@@ -89,7 +89,7 @@ namespace ArtNaxiApi.Controllers
         {
             var recentImages = await _imageRepository.GetRecentPublicImagesAsync(pageNumber, pageSize);
 
-            return Ok(recentImages);
+            return Ok(new { recentImages });
         }
 
         [Authorize]
@@ -102,8 +102,8 @@ namespace ArtNaxiApi.Controllers
             return result switch
             {
                 HttpStatusCode.OK => Ok(image),
-                HttpStatusCode.InternalServerError => StatusCode(500, "Error when saving image."),
-                HttpStatusCode.ServiceUnavailable => StatusCode(503, "Stable Diffussion server Unavaliable."),
+                HttpStatusCode.InternalServerError => StatusCode(500, new { message = "Error when saving image." }),
+                HttpStatusCode.ServiceUnavailable => StatusCode(503, new { message = "Stable Diffussion server Unavaliable." }),
                 _ => BadRequest()
             };
         }
@@ -118,7 +118,7 @@ namespace ArtNaxiApi.Controllers
             return result switch
             {
                 HttpStatusCode.OK => Ok(),
-                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.NotFound => NotFound(new { message = "Image not found." }),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
             };
@@ -134,7 +134,7 @@ namespace ArtNaxiApi.Controllers
             return result switch
             {
                 HttpStatusCode.OK => Ok(),
-                HttpStatusCode.NotFound => NotFound("Image not found."),
+                HttpStatusCode.NotFound => NotFound(new { message = "Image not found." }),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
             };

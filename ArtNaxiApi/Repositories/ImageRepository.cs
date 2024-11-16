@@ -118,5 +118,24 @@ namespace ArtNaxiApi.Repositories
             _context.Images.Update(imageById);
             await _context.SaveChangesAsync();
         }
+
+        public async Task SetAllUserImagesPrivateAsync(Guid userId)
+        {
+            var userImages = await _context.Images
+                .Where(i => i.UserId == userId).ToListAsync();
+
+            if (!userImages.Any())
+            {
+                throw new KeyNotFoundException();
+            }
+
+            foreach (var image in userImages)
+            {
+                image.IsPublic = false;
+                _context.Images.Update(image);
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

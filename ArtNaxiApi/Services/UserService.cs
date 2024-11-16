@@ -11,17 +11,20 @@ namespace ArtNaxiApi.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IImageRepository _imageRepository;
         private readonly IUserProfileService _userProfileService;
         private readonly IJwtService _jwtService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
+            IImageRepository imageRepository,
             IUserProfileService userProfileService,
             IJwtService jwtService,
             IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
+            _imageRepository = imageRepository;
             _userProfileService = userProfileService;
             _jwtService = jwtService;
             _httpContextAccessor = httpContextAccessor;
@@ -297,6 +300,13 @@ namespace ArtNaxiApi.Services
             }
 
             user.IsBanned = isBanned;
+
+            // Set all images private if user banned
+            if (isBanned)
+            {
+                await _imageRepository.SetAllUserImagesPrivateAsync(id);
+            }
+
             user.UpdatedAt = DateTime.UtcNow;
 
             await _userRepository.UpdateUserAsync(user);

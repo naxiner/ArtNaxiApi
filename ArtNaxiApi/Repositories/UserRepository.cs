@@ -20,6 +20,11 @@ namespace ArtNaxiApi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IQueryable<User>> GetUsersByQueryAsync(string query)
+        {
+            return _context.Users.Where(u => u.Username.Contains(query));
+        }
+
         public async Task<int> GetTotalCountUsersAsync()
         {
             return await _context.Users.CountAsync();

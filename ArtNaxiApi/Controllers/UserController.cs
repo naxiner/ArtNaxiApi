@@ -143,6 +143,22 @@ namespace ArtNaxiApi.Controllers
 
         [Authorize]
         [ServiceFilter(typeof(CheckBanAttribute))]
+        [HttpGet("search")]
+        public async Task<ActionResult> GetUsersByQuery(string query, int pageNumber = 1, int pageSize = 10)
+        {
+            var (result, users, totalPages) = await _userService.SearchUsersAsync(query, pageNumber, pageSize, User);
+
+            return result switch
+            {
+                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to search users." }),
+                HttpStatusCode.NotFound => NotFound(new { message = "Users not found." }),
+                HttpStatusCode.OK => Ok(new { message = "Users received successfully.", users, totalPages }),
+                _ => BadRequest()
+            };
+        }
+
+        [Authorize]
+        [ServiceFilter(typeof(CheckBanAttribute))]
         [HttpPost("{id}/ban")]
         public async Task<ActionResult> BanUser(Guid id)
         {

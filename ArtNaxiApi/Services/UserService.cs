@@ -3,6 +3,7 @@ using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Validation;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
 
@@ -278,6 +279,41 @@ namespace ArtNaxiApi.Services
             });
 
             return (HttpStatusCode.OK, allUsersDto, totalPages);
+        }
+
+        public async Task<(HttpStatusCode, IEnumerable<UserDto>?, int)> SearchUsersAsync(string query, int pageNumber, int pageSize, ClaimsPrincipal userClaim)
+        {
+            if (!userClaim.IsInRole(Roles.Admin))
+            {
+                return (HttpStatusCode.BadRequest, null, 0);   // You are not allowed to get users
+            }
+
+            var queryableUsers = await _userRepository.GetUsersByQueryAsync(query);
+            int usersCount = await queryableUsers.CountAsync();
+            var totalPages = (int)Math.Ceiling(usersCount / (double)pageSize);
+
+            var users = await queryableUsers
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            if (!queryableUsers.Any())
+            {
+                return (HttpStatusCode.NotFound, null, totalPages); // Users not found
+            }
+
+            var usersDto = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                IsBanned = user.IsBanned
+            });
+
+            return (HttpStatusCode.OK, usersDto, totalPages);
         }
 
         public async Task<User> GetUserByIdAsync(Guid id)

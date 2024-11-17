@@ -5,6 +5,7 @@ namespace ArtNaxiApi.Repositories
     public interface IUserRepository
     {
         Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber, int pageSize);
+        Task<IQueryable<User>> GetUsersByQueryAsync(string query);
         Task<int> GetTotalCountUsersAsync();
         Task<User> GetUserByIdAsync(Guid id);
         Task<User> GetUserByNameAsync(string username);

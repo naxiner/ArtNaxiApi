@@ -70,6 +70,15 @@ namespace ArtNaxiApi.Controllers
             };
         }
 
+        [Authorize]
+        [HttpGet("{id}/all-image-count")]
+        public async Task<ActionResult> GetAllImageCountById(Guid id)
+        {
+            var allImageCount = await _userProfileService.GetAllImageCountByUserIdAsync(id);
+
+            return Ok(new { allImageCount });
+        }
+
         [HttpGet("{id}/public-image-count")]
         public async Task <ActionResult> GetPublicImageCountById(Guid id)
         {

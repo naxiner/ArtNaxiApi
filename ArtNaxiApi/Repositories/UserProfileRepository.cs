@@ -1,7 +1,6 @@
 ﻿using ArtNaxiApi.Data;
 using ArtNaxiApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ArtNaxiApi.Repositories
 {
@@ -53,6 +52,17 @@ namespace ArtNaxiApi.Repositories
 
             _context.UserProfiles.Update(userProfile);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetAllImageCountAsync(Guid userId)
+        {
+            var userProfile = await _context.UserProfiles
+                .Include(up => up.Images)
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+
+            var imagesCount = userProfile.Images?.Count ?? 0;
+
+            return imagesCount;
         }
 
         public async Task<int> GetPublicImageCountAsync(Guid userId)

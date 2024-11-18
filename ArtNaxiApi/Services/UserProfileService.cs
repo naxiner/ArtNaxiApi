@@ -160,6 +160,13 @@ namespace ArtNaxiApi.Services
             return HttpStatusCode.OK;
         }
 
+        public async Task<int> GetAllImageCountByUserIdAsync(Guid id)
+        {
+            var imageCount = await _userProfileRepository.GetAllImageCountAsync(id);
+
+            return imageCount;
+        }
+
         public async Task<int> GetPublicImageCountByUserIdAsync(Guid id)
         {
             var imageCount = await _userProfileRepository.GetPublicImageCountAsync(id);

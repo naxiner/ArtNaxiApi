@@ -12,6 +12,7 @@ namespace ArtNaxiApi.Services
         Task<(HttpStatusCode, string?)> UpdateProfileAvatarByUserIdAsync(Guid userId, IFormFile avatarFile);
         Task<HttpStatusCode> DeleteUserAvatarByUserIdAsync(Guid userId, ClaimsPrincipal userClaim);
         Task<HttpStatusCode> DeleteUserProfileByUserIdAsync(Guid userId, ClaimsPrincipal userClaim);
+        Task<int> GetAllImageCountByUserIdAsync(Guid id);
         Task<int> GetPublicImageCountByUserIdAsync(Guid id);
     }
 }

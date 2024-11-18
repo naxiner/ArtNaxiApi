@@ -124,15 +124,13 @@ namespace ArtNaxiApi.Repositories
             var userImages = await _context.Images
                 .Where(i => i.UserId == userId).ToListAsync();
 
-            if (!userImages.Any())
+            if (userImages.Any())
             {
-                throw new KeyNotFoundException();
-            }
-
-            foreach (var image in userImages)
-            {
-                image.IsPublic = false;
-                _context.Images.Update(image);
+                foreach (var image in userImages)
+                {
+                    image.IsPublic = false;
+                    _context.Images.Update(image);
+                }
             }
 
             await _context.SaveChangesAsync();

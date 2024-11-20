@@ -1,6 +1,5 @@
 ﻿using ArtNaxiApi.Data;
 using ArtNaxiApi.Models;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArtNaxiApi.Repositories
@@ -11,6 +10,13 @@ namespace ArtNaxiApi.Repositories
         public LikeRepository(AppDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<int> GetLikeCountByEntityIdAsync(Guid entityId)
+        {
+            return await _context.Likes
+                .Where(e => e.EntityId == entityId)
+                .CountAsync();
         }
 
         public async Task LikeEntityAsync(Like like)

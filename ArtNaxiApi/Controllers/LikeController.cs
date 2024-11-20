@@ -16,6 +16,18 @@ namespace ArtNaxiApi.Controllers
             _likeService = likeService;
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetLikesCountByEntityId(Guid id)
+        {
+            var (result, likeCount) = await _likeService.GetLikeCountByEntityIdAsync(id);
+
+            return result switch
+            {
+                HttpStatusCode.OK => Ok(new { likeCount }),
+                _ => BadRequest()
+            };
+        }
+
         [Authorize]
         [HttpPost("like")]
         public async Task<ActionResult> LikeEntity(Guid entityId, string entityType)

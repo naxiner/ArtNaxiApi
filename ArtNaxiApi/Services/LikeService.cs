@@ -16,6 +16,13 @@ namespace ArtNaxiApi.Services
             _userService = userService;
         }
 
+        public async Task<(HttpStatusCode, int)> GetLikeCountByEntityIdAsync(Guid entityId)
+        {
+            var likeCount = await _likeRepository.GetLikeCountByEntityIdAsync(entityId);
+
+            return (HttpStatusCode.OK, likeCount);
+        }
+
         public async Task<HttpStatusCode> LikeEntityAsync(Guid entityId, string entityType)
         {
             if (!EntityTypeValidator.IsValidEntity(entityType))

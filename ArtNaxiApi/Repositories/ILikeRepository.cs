@@ -8,5 +8,6 @@ namespace ArtNaxiApi.Repositories
         Task LikeEntityAsync(Like like);
         Task<bool> IsLikeExistsAsync(Guid userId, Guid entityId, string entityType);
         Task DeleteAllLikesByImageIdAsync(Guid imageId);
+        Task<int> GetLikeCountByEntityIdAsync(Guid entityId);
     }
 }

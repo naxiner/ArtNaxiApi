@@ -17,6 +17,7 @@ namespace ArtNaxiApi.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly ILikeRepository _likeRepository;
         private readonly string _apiUrlTextToImg;
 
         public SDService(
@@ -26,6 +27,7 @@ namespace ArtNaxiApi.Services
             IUserRepository userRepository,
             IUserService userService,
             IUserProfileRepository userProfileRepository,
+            ILikeRepository likeRepository,
             IConfiguration configuration)
         {
             _httpClient = httpClient;
@@ -34,6 +36,7 @@ namespace ArtNaxiApi.Services
             _userRepository = userRepository;
             _userService = userService;
             _userProfileRepository = userProfileRepository;
+            _likeRepository = likeRepository;
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
@@ -134,6 +137,7 @@ namespace ArtNaxiApi.Services
             }
 
             await _imageRepository.DeleteImageByIdAsync(id);
+            await _likeRepository.DeleteAllLikesByImageIdAsync(image.Id);
 
             var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var filePath = Path.Combine(webRootPath, image.Url.TrimStart('/')); 

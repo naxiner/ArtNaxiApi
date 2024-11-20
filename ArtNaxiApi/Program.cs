@@ -97,6 +97,7 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<ISDService, SDService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
+            builder.Services.AddScoped<ILikeService, LikeService>();
 
             builder.Services.AddScoped<CheckBanAttribute>();
 

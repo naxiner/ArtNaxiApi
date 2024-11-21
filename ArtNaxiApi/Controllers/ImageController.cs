@@ -27,7 +27,7 @@ namespace ArtNaxiApi.Controllers
         public async Task<ActionResult<IEnumerable<Image>>> GetAllImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
             var pageOfImages = await _imageRepository.GetAllImagesAsync(pageNumber, pageSize);
-            
+
             return Ok(new { pageOfImages });
         }
 
@@ -80,7 +80,7 @@ namespace ArtNaxiApi.Controllers
         public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
             var recentImages = await _imageRepository.GetRecentImagesAsync(pageNumber, pageSize);
-            
+
             return Ok(new { recentImages });
         }
 
@@ -90,6 +90,14 @@ namespace ArtNaxiApi.Controllers
             var recentImages = await _imageRepository.GetRecentPublicImagesAsync(pageNumber, pageSize);
 
             return Ok(new { recentImages });
+        }
+        
+        [HttpGet("popular/public")]
+        public async Task<ActionResult<IEnumerable<Image>>> GetPopularPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            var popularImages = await _imageRepository.GetPopularPublicImagesAsync(pageNumber, pageSize);
+
+            return Ok(new { popularImages });
         }
 
         [Authorize]

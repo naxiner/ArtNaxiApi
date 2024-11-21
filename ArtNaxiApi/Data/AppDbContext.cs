@@ -10,6 +10,7 @@ namespace ArtNaxiApi.Data
         public DbSet<Image> Images { get; set; }
         public DbSet<SDRequest> SDRequests { get; set; }
         public DbSet<Style> Styles { get; set; }
+        public DbSet<Like> Likes { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
@@ -34,6 +35,9 @@ namespace ArtNaxiApi.Data
                 .HasOne(rs => rs.Style)
                 .WithMany(s => s.SDRequestStyles)
                 .HasForeignKey(rs => rs.StyleId);
+
+            modelBuilder.Entity<Like>()
+                .HasIndex(l => new { l.EntityId, l.EntityType });
         }
     }
 }

@@ -90,12 +90,14 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IImageRepository, ImageRepository>();
             builder.Services.AddScoped<IStyleRepository, StyleRepository>();
+            builder.Services.AddScoped<ILikeRepository, LikeRepository>();
 
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<ISDService, SDService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
+            builder.Services.AddScoped<ILikeService, LikeService>();
 
             builder.Services.AddScoped<CheckBanAttribute>();
 

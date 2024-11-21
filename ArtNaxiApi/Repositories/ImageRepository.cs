@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Data;
+﻿using ArtNaxiApi.Constants;
+using ArtNaxiApi.Data;
 using ArtNaxiApi.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -78,6 +79,30 @@ namespace ArtNaxiApi.Repositories
                 .Take(pageSize)
                 .Include(i => i.Request)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Image>> GetPopularPublicImagesAsync(int pageNumber, int pageSize)
+        {
+            var popularImagesQuery = _context.Images
+                .Where(image => image.IsPublic)
+                .Select(image => new
+                {
+                    Image = image,
+                    LikeCount = _context.Likes
+                        .Where(l => l.EntityId == image.Id && l.EntityType == EntityTypes.Image)
+                        .Count()
+                })
+                .OrderByDescending(x => x.LikeCount)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            
+            var popularImages = await popularImagesQuery
+                .Select(x => x.Image)
+                .Include(i => i.Request)
+                .ToListAsync();
+
+            return popularImages;
         }
 
         public async Task<IEnumerable<Image>> GetRecentPublicImagesAsync(int pageNumber, int pageSize)

@@ -13,6 +13,7 @@ namespace ArtNaxiApi.Repositories
         Task<int> GetTotalPublicImagesCountByUserIdAsync(Guid userId);
         Task<IEnumerable<Image>> GetRecentImagesAsync(int pageNumber, int pageSize);
         Task<IEnumerable<Image>> GetRecentPublicImagesAsync(int pageNumber, int pageSize);
+        Task<IEnumerable<Image>> GetPopularPublicImagesAsync(int pageNumber, int pageSize);
         Task DeleteImageByIdAsync(Guid id);
         Task SetImageVisibilityAsync(Guid id, bool isPublic);
         Task SetAllUserImagesPrivateAsync(Guid userId);

@@ -103,6 +103,8 @@ namespace ArtNaxiApi
 
             var app = builder.Build();
 
+            DbInitializer.InitializeAsync(app.Services).GetAwaiter().GetResult();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

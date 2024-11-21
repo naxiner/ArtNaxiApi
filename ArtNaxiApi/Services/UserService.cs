@@ -321,6 +321,11 @@ namespace ArtNaxiApi.Services
             return await _userRepository.GetUserByIdAsync(id);
         }
 
+        public async Task<User> GetUserByNameAsync(string username)
+        {
+            return await _userRepository.GetUserByNameAsync(username);
+        }
+
         public async Task<HttpStatusCode> BanUnbanUserByIdAsync(Guid id, bool isBanned, ClaimsPrincipal userClaim)
         {
             var currentUserId = GetCurrentUserId();

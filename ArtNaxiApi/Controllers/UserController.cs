@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Filters;
 using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,8 +32,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.Conflict => Conflict(new { message = "User with that Username or Email already exist." }),
-                HttpStatusCode.OK => Ok(new { message = "User register successful.", token }),
+                HttpStatusCode.Conflict => Conflict(new MessageResponse("User with that Username or Email already exist.")),
+                HttpStatusCode.OK => Ok(new RegisterResponse("User register successful.", token)),
                 _ => BadRequest()
             };
         }
@@ -44,10 +45,10 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new { message = "Invalid Username or Email." }),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Invalid Username or Email.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("Invalid Password.")),
                 HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.BadRequest => BadRequest(new { message = "Invalid Password." }),
-                HttpStatusCode.OK => Ok(new { token, refreshToken }),
+                HttpStatusCode.OK => Ok(new LoginResponse(token, refreshToken)),
                 _ => BadRequest()
             };
         }
@@ -60,6 +61,7 @@ namespace ArtNaxiApi.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("refresh-token")]
         public async Task<ActionResult> RefreshToken()
         {
@@ -67,9 +69,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.Unauthorized => Unauthorized(new { message = "Invalid refresh token." }),
-                HttpStatusCode.BadRequest => Unauthorized(new { message = "Refresh token is missing." }),
-                HttpStatusCode.OK => Ok(new { token = newToken, refreshToken = newRefreshToken }),
+                HttpStatusCode.Unauthorized => Unauthorized(new MessageResponse("Invalid refresh token.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("Refresh token is missing.")),
+                HttpStatusCode.OK => Ok(new LoginResponse(newToken, newRefreshToken)),
                 _ => BadRequest()
             };
         }
@@ -118,9 +120,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to delete this user." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
-                HttpStatusCode.OK => Ok(new { message = "User deleted successfully." }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to delete this user.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User not found.")),
+                HttpStatusCode.OK => Ok(new MessageResponse("User deleted successfully.")),
                 _ => BadRequest()
             };
         }

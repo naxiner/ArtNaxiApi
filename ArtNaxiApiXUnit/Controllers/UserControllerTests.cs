@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
+using ArtNaxiApi.Models.DTO.Responses;
 
 namespace ArtNaxiApiXUnit.Controllers
 {
@@ -27,6 +28,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsOK_WhenRegisterIsSuccessful()
         {
+            // Arrange
             var model = new RegistrDto
             {
                 Username = "username",
@@ -38,21 +40,14 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.RegisterUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.OK, token));
 
+            // Act
             var result = await _userController.RegisterUser(model);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<OkObjectResult>(result).Value;
-
-            var messageProperty = response.GetType().GetProperty("message");
-            var tokenProperty = response.GetType().GetProperty("token");
-
-            Assert.NotNull(messageProperty);
-            Assert.NotNull(tokenProperty);
-            var responseMessage = messageProperty.GetValue(response);
-            var responseToken = tokenProperty.GetValue(response);
-
-            Assert.Equal("User register successful.", responseMessage);
-            Assert.Equal(token, responseToken);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<RegisterResponse>(objectResult.Value);
+            Assert.Equal("User register successful.", response.Message);
+            Assert.Equal(token, response.Token);
         }
 
         [Fact]
@@ -78,6 +73,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsConflict_WhenUsernameIsExist()
         {
+            // Arrange
             var model = new RegistrDto
             {
                 Username = "existingUsername",
@@ -88,11 +84,13 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.RegisterUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.Conflict, "User with that Username or Email already exist."));
 
+            // Act
             var result = await _userController.RegisterUser(model);
 
-            var conflictResult = Assert.IsType<ConflictObjectResult>(result);
-            Assert.NotNull(conflictResult);
-            Assert.Equal("User with that Username or Email already exist.", conflictResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<ConflictObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("User with that Username or Email already exist.", response.Message);
         }
 
         [Fact]
@@ -120,6 +118,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsConflict_WhenEmailIsExist()
         {
+            // Arrange
             var model = new RegistrDto
             {
                 Username = "NewUser",
@@ -130,11 +129,13 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.RegisterUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.Conflict, "User with that Username or Email already exist."));
 
+            // Act
             var result = await _userController.RegisterUser(model);
 
-            var conflictResult = Assert.IsType<ConflictObjectResult>(result);
-            Assert.NotNull(conflictResult);
-            Assert.Equal("User with that Username or Email already exist.", conflictResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<ConflictObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("User with that Username or Email already exist.", response.Message);
         }
 
         [Theory]
@@ -191,6 +192,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task Login_ReturnsOk_WhenLoginIsSuccessful()
         {
+            // Arrange
             var model = new LoginDto
             {
                 UsernameOrEmail = "example@example.com",
@@ -200,26 +202,20 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.LoginUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.OK, "token", "refreshToken"));
 
+            // Act
             var result = await _userController.LoginUser(model);
 
-            var response = Assert.IsType<OkObjectResult>(result).Value;
-
-            var tokenProperty = response.GetType().GetProperty("token");
-            var refreshTokenProperty = response.GetType().GetProperty("refreshToken");
-
-            Assert.NotNull(tokenProperty);
-            Assert.NotNull(refreshTokenProperty);
-
-            var token = tokenProperty.GetValue(response);
-            var refreshToken = refreshTokenProperty.GetValue(response);
-
-            Assert.Equal("token", token);
-            Assert.Equal("refreshToken", refreshToken);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<LoginResponse>(objectResult.Value);
+            Assert.Equal("token", response.Token);
+            Assert.Equal("refreshToken", response.RefreshToken);
         }
 
         [Fact]
         public async Task Login_ReturnsNotFound_WhenUserNotFound()
         {
+            // Arrange
             var model = new LoginDto
             {
                 UsernameOrEmail = "notFound@example.com",
@@ -229,15 +225,19 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.LoginUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.NotFound, null, null));
 
+            // Act
             var result = await _userController.LoginUser(model);
 
-            var errorResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("Invalid Username or Email.", errorResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Invalid Username or Email.", response.Message);
         }
 
         [Fact]
         public async Task Login_ReturnsBadRequest_WhenInvalidPassword()
         {
+            // Arrange
             var model = new LoginDto
             {
                 UsernameOrEmail = "example@example.com",
@@ -247,10 +247,13 @@ namespace ArtNaxiApiXUnit.Controllers
             _userServiceMock.Setup(service => service.LoginUserAsync(model))
                 .ReturnsAsync((HttpStatusCode.BadRequest, null, null));
 
+            // Act
             var result = await _userController.LoginUser(model);
 
-            var errorResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Invalid Password.", errorResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<BadRequestObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Invalid Password.", response.Message);
         }
         #endregion
 
@@ -271,52 +274,53 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RefreshToken_ReturnsUnauthorized_WhenTokenIsInvalid()
         {
+            // Arrange
             _userServiceMock.Setup(service => service.RefreshTokenAsync())
                 .ReturnsAsync((HttpStatusCode.Unauthorized, null, null));
 
+            // Act
             var result = await _userController.RefreshToken();
 
-            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Invalid refresh token.", unauthorizedResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<UnauthorizedObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Invalid refresh token.", response.Message);
         }
 
         [Fact]
         public async Task RefreshToken_ReturnsUnauthorized_WhenTokenIsMissing()
         {
+            // Arrange
             _userServiceMock.Setup(service => service.RefreshTokenAsync())
                 .ReturnsAsync((HttpStatusCode.BadRequest, null, null));
 
+            // Act
             var result = await _userController.RefreshToken();
 
-            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Refresh token is missing.", unauthorizedResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<BadRequestObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Refresh token is missing.", response.Message);
         }
 
         [Fact]
         public async Task RefreshToken_ReturnsOK_WithNewTokens_WhenSuccessful()
         {
+            // Arrange
             var newToken = "newJwtToken";
             var newRefreshToken = "newRefreshToken";
 
             _userServiceMock.Setup(service => service.RefreshTokenAsync())
                 .ReturnsAsync((HttpStatusCode.OK, newToken, newRefreshToken));
 
+            // Act
             var result = await _userController.RefreshToken();
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<OkObjectResult>(result).Value;
-
-            var tokenProperty = response.GetType().GetProperty("token");
-            var refreshTokenProperty = response.GetType().GetProperty("refreshToken");
-
-            Assert.NotNull(tokenProperty);
-            Assert.NotNull(refreshTokenProperty);
-
-            var token = tokenProperty.GetValue(response);
-            var refreshToken = refreshTokenProperty.GetValue(response);
-
-            Assert.Equal(newToken, token);
-            Assert.Equal(newRefreshToken, refreshToken);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<LoginResponse>(objectResult.Value);
+            Assert.Equal(newToken, response.Token);
+            Assert.Equal(newRefreshToken, response.RefreshToken);
         }
         #endregion
 
@@ -394,40 +398,52 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DeleteUser_ReturnsOk_WhenUserIsDeletedSuccessfully()
         {
+            // Arrange
             var userId = Guid.NewGuid(); 
             _userServiceMock.Setup(service => service.DeleteUserByIdAsync(userId, It.IsAny<ClaimsPrincipal>()))
                 .ReturnsAsync(HttpStatusCode.OK);
 
+            // Act
             var result = await _userController.DeleteUser(userId);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("User deleted successfully.", okResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("User deleted successfully.", response.Message);
         }
 
         [Fact]
         public async Task DeleteUser_ReturnsNotFound_WhenUserDoesNotExist()
         {
+            // Arrange
             var userId = Guid.NewGuid();
             _userServiceMock.Setup(service => service.DeleteUserByIdAsync(userId, It.IsAny<ClaimsPrincipal>()))
                 .ReturnsAsync(HttpStatusCode.NotFound);
 
+            // Act
             var result = await _userController.DeleteUser(userId);
 
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("User not found.", notFoundResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("User not found.", response.Message);
         }
 
         [Fact]
-        public async Task DeleteUser_ReturnsBadRequest_WhenDeletionIsNotAllowed()
+        public async Task DeleteUser_ReturnsBadRequest_WhenUserNotAllowedToDelete()
         {
+            // Arrange
             var userId = Guid.NewGuid();
             _userServiceMock.Setup(service => service.DeleteUserByIdAsync(userId, It.IsAny<ClaimsPrincipal>()))
                 .ReturnsAsync(HttpStatusCode.BadRequest);
 
+            // Act
             var result = await _userController.DeleteUser(userId);
 
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("You are not allowed to delete this user.", badRequestResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<BadRequestObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("You are not allowed to delete this user.", response.Message);
         }
         #endregion
     }

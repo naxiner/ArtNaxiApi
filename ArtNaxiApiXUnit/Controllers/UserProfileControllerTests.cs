@@ -1,5 +1,6 @@
 ﻿using ArtNaxiApi.Controllers;
 using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -21,32 +22,43 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetUserProfileAsync_ReturnsOk_WhenUserProfileIsFound()
         {
-            var userId = Guid.NewGuid();
+            // Arrange
             var userProfileDto = new UserProfileDto
             {
-                Id = userId,
+                Id = Guid.NewGuid(),
+                Username = "username",
+                Email = "email",
+                ProfilePictureUrl = "avatarUrl",
+                Images = []
             };
-            _userProfileServiceMock.Setup(service => service.GetProfileByUserIdAsync(userId))
+
+            _userProfileServiceMock.Setup(service => service.GetProfileByUserIdAsync(userProfileDto.Id))
                 .ReturnsAsync((HttpStatusCode.OK, userProfileDto));
 
-            var result = await _userProfileController.GetUserProfileAsync(userId);
+            // Act
+            var result = await _userProfileController.GetUserProfileAsync(userProfileDto.Id);
 
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<UserProfileDto>(okResult.Value);
-            Assert.Equal(userId, returnValue.Id);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<UserProfileResponse>(objectResult.Value);
+            Assert.Equal(userProfileDto, response.UserProfileDto);
         }
 
         [Fact]
         public async Task GetUserProfileAsync_ReturnsNotFound_WhenUserIsNotFound()
         {
+            // Arrange
             var userId = Guid.NewGuid();
             _userProfileServiceMock.Setup(service => service.GetProfileByUserIdAsync(userId))
                 .ReturnsAsync((HttpStatusCode.NotFound, null));
 
+            // Act
             var result = await _userProfileController.GetUserProfileAsync(userId);
 
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("User with this Id not found.", notFoundResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("User with this Id not found.", response.Message);
         }
 
         [Fact]

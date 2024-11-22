@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Models.DTO.Responses;
+using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -22,8 +23,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new { message = "User with this Id not found." }),
-                HttpStatusCode.OK => Ok(new { userProfileDto }),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User with this Id not found.")),
+                HttpStatusCode.OK => Ok(new UserProfileResponse(userProfileDto)),
                 _ => BadRequest()
             };
         }

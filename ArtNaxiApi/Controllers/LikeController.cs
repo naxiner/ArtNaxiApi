@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Services;
+﻿using ArtNaxiApi.Models.DTO.Responses;
+using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -23,7 +24,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok(new { likeCount }),
+                HttpStatusCode.OK => Ok(new CountResponse(likeCount)),
                 _ => BadRequest()
             };
         }
@@ -36,7 +37,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok(new { isLiked }),
+                HttpStatusCode.OK => Ok(new LikeStatusResponse(isLiked)),
                 _ => BadRequest()
             };
         }
@@ -49,9 +50,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok(new { message = "Liked successfully." }),
-                HttpStatusCode.BadRequest => BadRequest(new { message = "Invalid entity type." }),
-                HttpStatusCode.Conflict => Conflict(new { message = "Already liked." }),
+                HttpStatusCode.OK => Ok(new MessageResponse("Liked successfully.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("Invalid entity type.")),
+                HttpStatusCode.Conflict => Conflict(new MessageResponse("Already liked.")),
                 _ => BadRequest()
             };
         }
@@ -64,9 +65,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok(new { message = "Disliked successfully." }),
-                HttpStatusCode.BadRequest => BadRequest(new { message = "Invalid entity type." }),
-                HttpStatusCode.Conflict => Conflict(new { message = "Like not exist." }),
+                HttpStatusCode.OK => Ok(new MessageResponse("Disliked successfully.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("Invalid entity type.")),
+                HttpStatusCode.Conflict => Conflict(new MessageResponse("Like not exist.")),
                 _ => BadRequest()
             };
         }

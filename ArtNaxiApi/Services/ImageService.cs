@@ -10,10 +10,12 @@ namespace ArtNaxiApi.Services
     public class ImageService : IImageService
     {
         private readonly IImageRepository _imageRepository;
+        private readonly IUserService _userService;
 
-        public ImageService(IImageRepository imageRepository)
+        public ImageService(IImageRepository imageRepository, IUserService userService)
         {
             _imageRepository = imageRepository;
+            _userService = userService;
         }
 
         public async Task<(HttpStatusCode, IEnumerable<ImageDto>, int)> GetAllImagesAsync(int pageNumber, int pageSize, ClaimsPrincipal userClaim)
@@ -39,6 +41,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             });
 
@@ -60,6 +63,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             };
 
@@ -89,6 +93,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             });
 
@@ -97,7 +102,7 @@ namespace ArtNaxiApi.Services
 
         public async Task<(HttpStatusCode, IEnumerable<ImageDto>, int)> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
         {
-            var userImages = await _imageRepository.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
+            var userImages = await _imageRepository.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
 
             if (userImages == null)
             {
@@ -113,6 +118,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             });
 
@@ -137,6 +143,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             });
 
@@ -161,10 +168,74 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             });
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
+        }
+
+        public async Task<(HttpStatusCode, IEnumerable<ImageDto>, int)> GetPopularPublicImagesAsync(int pageNumber, int pageSize)
+        {
+            var popularPublicImages = await _imageRepository.GetPopularPublicImagesAsync(pageNumber, pageSize);
+            
+            if (popularPublicImages == null)
+            {
+                return (HttpStatusCode.NotFound, Enumerable.Empty<ImageDto>(), 0);     // Images not found
+            }
+
+            var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountAsync();
+            var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
+
+            var imagesDto = popularPublicImages.Select(image => new ImageDto
+            {
+                Id = image.Id,
+                Url = image.Url,
+                CreationTime = image.CreationTime,
+                CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
+                Request = image.Request
+            });
+
+            return (HttpStatusCode.OK, imagesDto, totalPages);
+        }
+
+        public async Task<HttpStatusCode> MakeImagePublicAsync(Guid id)
+        {
+            var image = await _imageRepository.GetImageByIdAsync(id);
+            if (image == null)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            var currentUserId = _userService.GetCurrentUserId();
+            if (image.UserId != currentUserId)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            await _imageRepository.SetImageVisibilityAsync(id, true);
+
+            return HttpStatusCode.OK;
+        }
+
+        public async Task<HttpStatusCode> MakeImagePrivateAsync(Guid id)
+        {
+            var image = await _imageRepository.GetImageByIdAsync(id);
+            if (image == null)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            var currentUserId = _userService.GetCurrentUserId();
+            if (image.UserId != currentUserId)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            await _imageRepository.SetImageVisibilityAsync(id, false);
+
+            return HttpStatusCode.OK;
         }
     }
 }

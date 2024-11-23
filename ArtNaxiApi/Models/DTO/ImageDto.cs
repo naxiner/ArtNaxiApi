@@ -6,6 +6,7 @@
         public string Url { get; set; }
         public DateTime CreationTime { get; set; }
         public string CreatedBy { get; set; }
+        public bool IsPublic { get; set; }
         public SDRequest Request { get; set; }
     }
 }

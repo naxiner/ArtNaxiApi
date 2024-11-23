@@ -100,6 +100,7 @@ namespace ArtNaxiApi.Services
                 CreationTime = DateTime.UtcNow,
                 CreatedBy = currentUser.Username,
                 Request = request,
+                IsPublic = false,
                 User = currentUser,
                 UserId = userId
             };
@@ -116,6 +117,7 @@ namespace ArtNaxiApi.Services
                 Url = image.Url,
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
                 Request = image.Request
             };
 
@@ -148,44 +150,6 @@ namespace ArtNaxiApi.Services
             }
 
             return HttpStatusCode.NoContent;
-        }
-
-        public async Task<HttpStatusCode> MakeImagePublicAsync(Guid id)
-        {
-            var image = await _imageRepository.GetImageByIdAsync(id);
-            if (image == null)
-            {
-                return HttpStatusCode.NotFound;
-            }
-
-            var currentUserId = _userService.GetCurrentUserId();
-            if (image.UserId != currentUserId)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            await _imageRepository.SetImageVisibilityAsync(id, true);
-
-            return HttpStatusCode.OK;
-        }
-
-        public async Task<HttpStatusCode> MakeImagePrivateAsync(Guid id)
-        {
-            var image = await _imageRepository.GetImageByIdAsync(id);
-            if (image == null)
-            {
-                return HttpStatusCode.NotFound;
-            }
-
-            var currentUserId = _userService.GetCurrentUserId();
-            if (image.UserId != currentUserId)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            await _imageRepository.SetImageVisibilityAsync(id, false);
-
-            return HttpStatusCode.OK;
         }
 
         private async Task<string> SaveImage(byte[] imageBytes)

@@ -113,9 +113,14 @@ namespace ArtNaxiApi.Controllers
         [HttpGet("popular/public")]
         public async Task<ActionResult<IEnumerable<Image>>> GetPopularPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var popularImages = await _imageRepository.GetPopularPublicImagesAsync(pageNumber, pageSize);
+            var (result, popularPublicImages, totalPages) = await _imageService.GetPopularPublicImagesAsync(pageNumber, pageSize);
 
-            return Ok(new { popularImages });
+            return result switch
+            {
+                HttpStatusCode.OK => Ok(new ImagesResponse(popularPublicImages, totalPages)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
 
         [Authorize]
@@ -128,8 +133,8 @@ namespace ArtNaxiApi.Controllers
             return result switch
             {
                 HttpStatusCode.OK => Ok(new ImageResponse(image)),
-                HttpStatusCode.InternalServerError => StatusCode(500, new { message = "Error when saving image." }),
-                HttpStatusCode.ServiceUnavailable => StatusCode(503, new { message = "Stable Diffussion server Unavaliable." }),
+                HttpStatusCode.InternalServerError => StatusCode(500, new MessageResponse("Error when saving image.")),
+                HttpStatusCode.ServiceUnavailable => StatusCode(503, new MessageResponse("Stable Diffussion server Unavaliable.")),
                 _ => BadRequest()
             };
         }
@@ -139,12 +144,12 @@ namespace ArtNaxiApi.Controllers
         [HttpPut("{id}/make-public")]
         public async Task<ActionResult> MakeImagePublic(Guid id)
         {
-            var result = await _sdService.MakeImagePublicAsync(id);
+            var result = await _imageService.MakeImagePublicAsync(id);
 
             return result switch
             {
                 HttpStatusCode.OK => Ok(),
-                HttpStatusCode.NotFound => NotFound(new { message = "Image not found." }),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Image not found.")),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
             };
@@ -155,12 +160,12 @@ namespace ArtNaxiApi.Controllers
         [HttpPut("{id}/make-private")]
         public async Task<ActionResult> MakeImagePrivate(Guid id)
         {
-            var result = await _sdService.MakeImagePrivateAsync(id);
+            var result = await _imageService.MakeImagePrivateAsync(id);
 
             return result switch
             {
                 HttpStatusCode.OK => Ok(),
-                HttpStatusCode.NotFound => NotFound(new { message = "Image not found." }),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Image not found.")),
                 HttpStatusCode.Forbidden => Forbid(),
                 _ => BadRequest()
             };
@@ -175,7 +180,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Image not found.")),
                 HttpStatusCode.Forbidden => Forbid(),
                 HttpStatusCode.NoContent => NoContent(),
                 _ => BadRequest()

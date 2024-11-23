@@ -5,6 +5,7 @@ using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Dynamic;
@@ -16,7 +17,6 @@ namespace ArtNaxiApiXUnit.Controllers
     public class ImageControllerTests
     {
         private readonly Mock<ISDService> _sdServiceMock;
-        private readonly Mock<IImageRepository> _imageRepositoryMock;
         private readonly Mock<IImageService> _imageServiceMock;
         private readonly ImageController _imageController;
         private readonly ClaimsPrincipal _user;
@@ -24,9 +24,8 @@ namespace ArtNaxiApiXUnit.Controllers
         public ImageControllerTests()
         {
             _sdServiceMock = new Mock<ISDService>();
-            _imageRepositoryMock = new Mock<IImageRepository>();
             _imageServiceMock = new Mock<IImageService>();
-            _imageController = new ImageController(_sdServiceMock.Object, _imageRepositoryMock.Object, _imageServiceMock.Object);
+            _imageController = new ImageController(_sdServiceMock.Object, _imageServiceMock.Object);
 
             var claims = new List<Claim>
             {
@@ -45,21 +44,64 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
             };
 
             int pageNumber = 1, pageSize = 10;
-            _imageServiceMock.Setup(service => service.GetAllImagesAsync(pageNumber, pageSize, _user)).ReturnsAsync((HttpStatusCode.OK, images));
+            var totalPages = (int)Math.Ceiling(3 / (double)pageSize);
+            
+            _imageServiceMock.Setup(service => service.GetAllImagesAsync(pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
             
             // Act
             var result = await _imageController.GetAllImagesAsync();
 
             // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<ApiResponse<IEnumerable<ImageDto>>>(objectResult.Value);
-            Assert.Equal(images, response.Data);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetAllImagesAsync_ReturnsForbidden_WhenUserIsNotAdmin()
+        {
+            // Arrange
+            var images = new List<ImageDto>();
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+            
+            _imageServiceMock.Setup(service => service.GetAllImagesAsync(pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.Forbidden, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetAllImagesAsync();
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetAllImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var images = new List<ImageDto>();
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service.GetAllImagesAsync(pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetAllImagesAsync();
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
         }
 
         [Fact]
@@ -72,41 +114,328 @@ namespace ArtNaxiApiXUnit.Controllers
                 Url = "/Images/example.png",
                 CreationTime = DateTime.UtcNow,
                 CreatedBy = "CreatedBy",
+                IsPublic = false,
                 Request = new SDRequest()
             };
 
-            _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id)).ReturnsAsync((HttpStatusCode.OK, image));
+            _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id))
+                .ReturnsAsync((HttpStatusCode.OK, image));
 
             // Act
             var result = await _imageController.GetImageByIdAsync(image.Id);
 
             // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<ApiResponse<ImageDto>>(objectResult.Value);
-            Assert.Equal(image, response.Data);
+            var response = Assert.IsType<ImageResponse>(objectResult.Value);
+            Assert.Equal(image, response.Image);
         }
 
         [Fact]
         public async Task GetImageByIdAsync_ReturnsNotFound_WhenImageDoesNotExist()
         {
-            var imageId = Guid.NewGuid();
+            // Arrange
+            var image = new ImageDto
+            {
+                Id = Guid.NewGuid(),
+                Url = "/Images/example.png",
+                CreationTime = DateTime.UtcNow,
+                CreatedBy = "CreatedBy",
+                IsPublic = false,
+                Request = new SDRequest()
+            };
 
-            _imageRepositoryMock.Setup(repo => repo.GetImageByIdAsync(imageId)).ReturnsAsync((Image)null);
+            _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id))
+                .ReturnsAsync((HttpStatusCode.NotFound, image));
 
-            var result = await _imageController.GetImageByIdAsync(imageId);
+            // Act
+            var result = await _imageController.GetImageByIdAsync(image.Id);
 
-            var actionResult = Assert.IsType<ActionResult<Image>>(result);
-            Assert.IsType<NotFoundResult>(actionResult.Result);
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Image not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task GetImagesByUserIdAsync_ReturnsOk_WithAllUserImages()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var images = new List<ImageDto>
+            {
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+            };
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(3 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetImagesByUserIdAsync(userId, pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetImagesByUserIdAsync_Forbidden_WhenUserIsNotAdmin()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var images = new List<ImageDto>();
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetImagesByUserIdAsync(userId, pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.Forbidden, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetImagesByUserIdAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var images = new List<ImageDto>();
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetImagesByUserIdAsync(userId, pageNumber, pageSize, _user))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task GetPublicImagesByUserIdAsync_ReturnsOk_WithUserPublicImagesList()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var images = new List<ImageDto>
+            {
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+            };
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(1 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetPublicImagesByUserIdAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var images = new List<ImageDto>();
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task GetRecentImagesAsync_ReturnsOk_WithRecentImagesList()
+        {
+            // Arrange
+            var images = new List<ImageDto>
+            {
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+            };
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(3 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetRecentImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetRecentImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetRecentImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var images = new List<ImageDto>();
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetRecentImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetRecentImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task GetRecentPublicImagesAsync_ReturnsOk_WithRecentImagesList()
+        {
+            // Arrange
+            var images = new List<ImageDto>
+            {
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+            };
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(1 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetRecentPublicImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetRecentPublicImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetRecentPublicImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var images = new List<ImageDto>();
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetRecentPublicImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetRecentPublicImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task GetPopularPublicImagesAsync_ReturnsOk_WithRecentImagesList()
+        {
+            // Arrange
+            var images = new List<ImageDto>
+            {
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+            };
+
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(1 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetPopularPublicImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.OK, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetPopularPublicImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImagesResponse>(objectResult.Value);
+            Assert.Equal(images, response.Images);
+            Assert.Equal(totalPages, response.TotalPages);
+        }
+
+        [Fact]
+        public async Task GetPopularPublicImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var images = new List<ImageDto>();
+            int pageNumber = 1, pageSize = 10;
+            var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
+
+            _imageServiceMock.Setup(service => service
+                .GetPopularPublicImagesAsync(pageNumber, pageSize))
+                .ReturnsAsync((HttpStatusCode.NotFound, images, totalPages));
+
+            // Act
+            var result = await _imageController.GetPopularPublicImagesAsync(pageNumber, pageSize);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Images not found.", response.Message);
         }
 
         [Fact]
         public async Task GenerateImage_ReturnsOk_WhenImageIsGeneratedSuccessfully()
         {
+            // Arrange
             var sdRequest = new SDRequest
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = null,
+                Styles = [],
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,
@@ -120,31 +449,32 @@ namespace ArtNaxiApiXUnit.Controllers
                 Id = Guid.NewGuid(),
                 Url = "/Images/generated_image.png",
                 CreationTime = DateTime.Now,
+                CreatedBy = "CreatedBy",
+                IsPublic = false,
                 Request = sdRequest
             };
 
             _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
                 .ReturnsAsync((HttpStatusCode.OK, expectedImage));
 
+            // Act
             var result = await _imageController.GenerateImage(sdRequest);
 
-            var actionResult = Assert.IsType<ActionResult<Image>>(result);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-
-            var returnValue = Assert.IsType<Image>(okResult.Value);
-            Assert.Equal(expectedImage.Id, returnValue.Id);
-            Assert.Equal(expectedImage.Url, returnValue.Url);
-            Assert.Equal(expectedImage.Request, returnValue.Request);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ImageResponse>(objectResult.Value);
+            Assert.Equal(expectedImage, response.Image);
         }
 
         [Fact]
         public async Task GenerateImage_ReturnsInternalServerError_WhenErrorOccurs()
         {
+            // Arrange
             var sdRequest = new SDRequest
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = null,
+                Styles = [],
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,
@@ -153,26 +483,37 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
-            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
-                .ReturnsAsync((HttpStatusCode.InternalServerError, null));
+            var expectedImage = new ImageDto
+            {
+                Id = Guid.NewGuid(),
+                Url = "/Images/generated_image.png",
+                CreationTime = DateTime.Now,
+                CreatedBy = "CreatedBy",
+                IsPublic = false,
+                Request = sdRequest
+            };
 
+            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
+                .ReturnsAsync((HttpStatusCode.InternalServerError, expectedImage));
+
+            // Act
             var result = await _imageController.GenerateImage(sdRequest);
 
-            var actionResult = Assert.IsType<ActionResult<Image>>(result);
-            Assert.IsType<ObjectResult>(actionResult.Result);
-            var objectResult = actionResult.Result as ObjectResult;
-            Assert.Equal(500, objectResult.StatusCode);
-            Assert.Equal("Error when saving image.", objectResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Error when saving image.", response.Message);
         }
 
         [Fact]
         public async Task GenerateImage_ReturnsServiceUnavailable_WhenServiceIsUnavailable()
         {
+            // Arrange
             var sdRequest = new SDRequest
             {
                 Prompt = "an apple",
                 NegativePrompt = "",
-                Styles = null,
+                Styles = [],
                 SamplerName = "DPM++ SDE",
                 Scheduler = "Karras",
                 Steps = 7,
@@ -181,64 +522,176 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
-            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
-                .ReturnsAsync((HttpStatusCode.ServiceUnavailable, null));
+            var expectedImage = new ImageDto
+            {
+                Id = Guid.NewGuid(),
+                Url = "/Images/generated_image.png",
+                CreationTime = DateTime.Now,
+                CreatedBy = "CreatedBy",
+                IsPublic = false,
+                Request = sdRequest
+            };
 
+            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
+                .ReturnsAsync((HttpStatusCode.ServiceUnavailable, expectedImage));
+
+            // Act
             var result = await _imageController.GenerateImage(sdRequest);
 
-            var actionResult = Assert.IsType<ActionResult<Image>>(result);
-            Assert.IsType<ObjectResult>(actionResult.Result);
-            var objectResult = actionResult.Result as ObjectResult;
-            Assert.Equal(503, objectResult.StatusCode);
-            Assert.Equal("Stable Diffussion server Unavaliable.", objectResult.Value);
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Stable Diffussion server Unavaliable.", response.Message);
+        }
+
+        [Fact]
+        public async Task MakeImagePublic_ReturnsOk_WhenMakePublicSuccesfully()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.OK);
+
+            // Act
+            var result = await _imageController.MakeImagePublic(imageId);
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task MakeImagePublic_ReturnsNotFound_WhenImageDoesNotExist()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.NotFound);
+
+            // Act
+            var result = await _imageController.MakeImagePublic(imageId);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Image not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task MakeImagePublic_ReturnsForbidden_WhenUserNotOwner()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.Forbidden);
+
+            // Act
+            var result = await _imageController.MakeImagePublic(imageId);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivate_ReturnsOk_WhenMakePrivateSuccesfully()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.OK);
+
+            // Act
+            var result = await _imageController.MakeImagePrivate(imageId);
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivate_ReturnsNotFound_WhenImageDoesNotExist()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.NotFound);
+
+            // Act
+            var result = await _imageController.MakeImagePrivate(imageId);
+
+            // Assert
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Image not found.", response.Message);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivate_ReturnsForbidden_WhenUserNotOwner()
+        {
+            // Assert
+            var imageId = Guid.NewGuid();
+
+            _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
+                .ReturnsAsync(HttpStatusCode.Forbidden);
+
+            // Act
+            var result = await _imageController.MakeImagePrivate(imageId);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
         public async Task DeleteImageById_ReturnsNotFound_WhenImageDoesNotExist()
         {
+            // Assert
             var imageId = Guid.NewGuid();
+
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.NotFound);
 
+            // Act
             var result = await _imageController.DeleteImageById(imageId);
 
-            Assert.IsType<NotFoundResult>(result);
+            // Arrange
+            var objectResult = Assert.IsType<NotFoundObjectResult>(result);
+            var response = Assert.IsType<MessageResponse>(objectResult.Value);
+            Assert.Equal("Image not found.", response.Message);
         }
 
         [Fact]
         public async Task DeleteImageById_ReturnsForbid_WhenUserIsForbidden()
         {
+            // Assert
             var imageId = Guid.NewGuid();
+
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.Forbidden);
 
+            // Act
             var result = await _imageController.DeleteImageById(imageId);
 
+            // Arrange
             Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
         public async Task DeleteImageById_ReturnsNoContent_WhenImageDeletedSuccessfully()
         {
+            // Assert
             var imageId = Guid.NewGuid();
+
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.NoContent);
 
+            // Act
             var result = await _imageController.DeleteImageById(imageId);
 
+            // Arrange
             Assert.IsType<NoContentResult>(result);
-        }
-
-        [Fact]
-        public async Task DeleteImageById_ReturnsBadRequest_WhenOtherErrorOccurs()
-        {
-            var imageId = Guid.NewGuid();
-            _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
-                .ReturnsAsync(HttpStatusCode.BadRequest);
-
-            var result = await _imageController.DeleteImageById(imageId);
-
-            Assert.IsType<BadRequestResult>(result);
         }
     }
 }

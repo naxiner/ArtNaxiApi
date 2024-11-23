@@ -5,6 +5,7 @@ using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -15,16 +16,11 @@ namespace ArtNaxiApi.Controllers
     public class ImageController : ControllerBase
     {
         private readonly ISDService _sdService;
-        private readonly IImageRepository _imageRepository;
         private readonly IImageService _imageService;
 
-        public ImageController(
-            ISDService sdService,
-            IImageRepository imageRepository,
-            IImageService imageService)
+        public ImageController(ISDService sdService, IImageService imageService)
         {
             _sdService = sdService;
-            _imageRepository = imageRepository;
             _imageService = imageService;
         }
 
@@ -111,7 +107,7 @@ namespace ArtNaxiApi.Controllers
         }
         
         [HttpGet("popular/public")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetPopularPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetPopularPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
             var (result, popularPublicImages, totalPages) = await _imageService.GetPopularPublicImagesAsync(pageNumber, pageSize);
 

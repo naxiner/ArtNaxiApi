@@ -85,12 +85,12 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
-                HttpStatusCode.Conflict => Conflict(new { message = "Username or email already exist for another user." }),
-                HttpStatusCode.BadRequest => BadRequest(new { message = "Password is not correct." }),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User not found.")),
+                HttpStatusCode.Conflict => Conflict(new MessageResponse("Username or email already exist for another user.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("Password is not correct.")),
                 HttpStatusCode.Forbidden => Forbid(),
                 HttpStatusCode.NoContent => NoContent(),
-                HttpStatusCode.OK => Ok(new { message = "User updated successfully." }),
+                HttpStatusCode.OK => Ok(new MessageResponse("User updated successfully.")),
                 _ => BadRequest()
             };
         }
@@ -104,9 +104,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to set this role." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
-                HttpStatusCode.OK => Ok(new { message = "Role has been successfully assigned." }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to set this role.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User not found.")),
+                HttpStatusCode.OK => Ok(new MessageResponse("Role has been successfully assigned.")),
                 _ => BadRequest()
             };
         }
@@ -136,9 +136,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to get all users." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "Users not found." }),
-                HttpStatusCode.OK => Ok(new { message = "All users received successfully.", users, totalPages }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to get all users.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Users not found.")),
+                HttpStatusCode.OK => Ok(new UsersResponse(users, totalPages)),
                 _ => BadRequest()
             };
         }
@@ -152,9 +152,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to search users." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "Users not found." }),
-                HttpStatusCode.OK => Ok(new { message = "Users received successfully.", users, totalPages }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to search users.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Users not found.")),
+               HttpStatusCode.OK => Ok(new UsersResponse(users, totalPages)),
                 _ => BadRequest()
             };
         }
@@ -168,9 +168,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to Ban this user." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
-                HttpStatusCode.OK => Ok(new { message = "User banned successfully."}),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to Ban this user.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User not found.")),
+                HttpStatusCode.OK => Ok(new MessageResponse("User banned successfully.")),
                 _ => BadRequest()
             };
         }
@@ -184,9 +184,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to Unban this user." }),
-                HttpStatusCode.NotFound => NotFound(new { message = "User not found." }),
-                HttpStatusCode.OK => Ok(new { message = "User unbanned successfully." }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to Unban this user.")),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User not found.")),
+                HttpStatusCode.OK => Ok(new MessageResponse("User unbanned successfully.")),
                 _ => BadRequest()
             };
         }

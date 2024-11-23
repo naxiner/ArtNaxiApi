@@ -36,8 +36,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new { message = "Avatar not found.", userAvatarUrl }),
-                HttpStatusCode.OK => Ok(new { userAvatarUrl }),
+                HttpStatusCode.NotFound => NotFound(new AvatarResponse("Avatar not found.", userAvatarUrl)),
+                HttpStatusCode.OK => Ok(new AvatarResponse("", userAvatarUrl)),
                 _ => BadRequest()
             };
         }
@@ -46,13 +46,13 @@ namespace ArtNaxiApi.Controllers
         [HttpPut("avatar/{id}")]
         public async Task<ActionResult> UpdateProfileAvatarById(Guid id, IFormFile avatarFile)
         {
-            var (result, profilePictureUrl) = await _userProfileService.UpdateProfileAvatarByUserIdAsync(id, avatarFile);
+            var (result, userAvatarUrl) = await _userProfileService.UpdateProfileAvatarByUserIdAsync(id, avatarFile);
 
             return result switch
             {
                 HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.BadRequest => BadRequest(new { message = "No file uploaded" }),
-                HttpStatusCode.OK => Ok(new { message = "Avatar updated successful.", profilePictureUrl }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("No file uploaded")),
+                HttpStatusCode.OK => Ok(new AvatarResponse("Avatar updated successful.", userAvatarUrl)),
                 _ => BadRequest()
             };
         }
@@ -65,8 +65,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new { message = "You are not allowed to delete this avatar." }),
-                HttpStatusCode.OK => Ok(new { message = "Avatar deleted successfully." }),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to delete this avatar.")),
+                HttpStatusCode.OK => Ok(new MessageResponse("Avatar deleted successfully.")),
                 _ => BadRequest()
             };
         }
@@ -77,7 +77,7 @@ namespace ArtNaxiApi.Controllers
         {
             var allImageCount = await _userProfileService.GetAllImageCountByUserIdAsync(id);
 
-            return Ok(new { allImageCount });
+            return Ok(new CountResponse(allImageCount));
         }
 
         [HttpGet("{id}/public-image-count")]
@@ -85,7 +85,7 @@ namespace ArtNaxiApi.Controllers
         {
             var publicImageCount = await _userProfileService.GetPublicImageCountByUserIdAsync(id);
 
-            return Ok(new { publicImageCount });
+            return Ok(new CountResponse(publicImageCount));
         }
     }
 }

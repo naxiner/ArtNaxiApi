@@ -1,5 +1,7 @@
 ﻿using ArtNaxiApi.Filters;
 using ArtNaxiApi.Models;
+using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,82 +16,98 @@ namespace ArtNaxiApi.Controllers
     {
         private readonly ISDService _sdService;
         private readonly IImageRepository _imageRepository;
+        private readonly IImageService _imageService;
 
         public ImageController(
             ISDService sdService,
-            IImageRepository imageRepository)
+            IImageRepository imageRepository,
+            IImageService imageService)
         {
             _sdService = sdService;
             _imageRepository = imageRepository;
+            _imageService = imageService;
         }
 
+        [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Image>>> GetAllImagesAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetAllImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var pageOfImages = await _imageRepository.GetAllImagesAsync(pageNumber, pageSize);
+            var (result, allImages, totalPages) = await _imageService.GetAllImagesAsync(pageNumber, pageSize, User);
 
-            return Ok(new { pageOfImages });
+            return result switch
+            {
+                HttpStatusCode.OK => Ok(new ImagesResponse(allImages, totalPages)),
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Image>> GetImageByIdAsync(Guid id)
+        public async Task<ActionResult> GetImageByIdAsync(Guid id)
         {
-            var imageById = await _imageRepository.GetImageByIdAsync(id);
+            var (result, imageById) = await _imageService.GetImageByIdAsync(id);
 
-            if (imageById == null)
+            return result switch
             {
-                return NotFound();
-            }
-
-            return Ok(new { imageById });
+                HttpStatusCode.OK => Ok(new ImageResponse(imageById)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Image not found.")),
+                _ => BadRequest()
+            };
         }
 
+        [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<(IEnumerable<Image>, int)>> GetImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
         {
-            var userImages = await _imageRepository.GetImagesByUserIdAsync(userId, pageNumber, pageSize);
+            var (result, allImages, totalPages) = await _imageService.GetImagesByUserIdAsync(userId, pageNumber, pageSize, User);
 
-            if (userImages == null)
+            return result switch
             {
-                return NotFound();
-            }
-
-            var totalImagesCount = await _imageRepository.GetTotalImagesCountByUserIdAsync(userId);
-            var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
-
-            return Ok(new { userImages, totalPages });
+                HttpStatusCode.OK => Ok(new ImagesResponse(allImages, totalPages)),
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
 
         [HttpGet("user/{userId}/public")]
-        public async Task<ActionResult<(IEnumerable<Image>, int)>> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
         {
-            var userImages = await _imageRepository.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
+            var (result, userPublicImages, totalPages) = await _imageService.GetPublicImagesByUserIdAsync(userId, pageNumber, pageSize);
 
-            if (userImages == null)
+            return result switch
             {
-                return NotFound();
-            }
-
-            var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountByUserIdAsync(userId);
-            var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
-
-            return Ok(new { userImages, totalPages });
+                HttpStatusCode.OK => Ok(new ImagesResponse(userPublicImages, totalPages)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
 
         [HttpGet("recent")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetRecentImagesAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetRecentImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var recentImages = await _imageRepository.GetRecentImagesAsync(pageNumber, pageSize);
+            var (result, recentImages, totalPages) = await _imageService.GetRecentImagesAsync(pageNumber, pageSize);
 
-            return Ok(new { recentImages });
+            return result switch
+            {
+                HttpStatusCode.OK => Ok(new ImagesResponse(recentImages, totalPages)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
 
         [HttpGet("recent/public")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetRecentPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult> GetRecentPublicImagesAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var recentImages = await _imageRepository.GetRecentPublicImagesAsync(pageNumber, pageSize);
+            var (result, recentPublicImages, totalPages) = await _imageService.GetRecentPublicImagesAsync(pageNumber, pageSize);
 
-            return Ok(new { recentImages });
+            return result switch
+            {
+                HttpStatusCode.OK => Ok(new ImagesResponse(recentPublicImages, totalPages)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Images not found.")),
+                _ => BadRequest()
+            };
         }
         
         [HttpGet("popular/public")]
@@ -109,7 +127,7 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.OK => Ok(image),
+                HttpStatusCode.OK => Ok(new ImageResponse(image)),
                 HttpStatusCode.InternalServerError => StatusCode(500, new { message = "Error when saving image." }),
                 HttpStatusCode.ServiceUnavailable => StatusCode(503, new { message = "Stable Diffussion server Unavaliable." }),
                 _ => BadRequest()

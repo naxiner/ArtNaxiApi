@@ -18,5 +18,6 @@ namespace ArtNaxiApi.Repositories
         Task SetImageVisibilityAsync(Guid id, bool isPublic);
         Task SetAllUserImagesPrivateAsync(Guid userId);
         Task<int> GetTotalImagesCountAsync();
+        Task<int> GetTotalPublicImagesCountAsync();
     }
 }

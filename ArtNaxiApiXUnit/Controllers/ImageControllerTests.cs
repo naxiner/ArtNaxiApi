@@ -1,6 +1,7 @@
 ﻿using ArtNaxiApi.Controllers;
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Models.DTO.Responses;
 using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ namespace ArtNaxiApiXUnit.Controllers
     {
         private readonly Mock<ISDService> _sdServiceMock;
         private readonly Mock<IImageRepository> _imageRepositoryMock;
+        private readonly Mock<IImageService> _imageServiceMock;
         private readonly ImageController _imageController;
         private readonly ClaimsPrincipal _user;
 
@@ -23,7 +25,8 @@ namespace ArtNaxiApiXUnit.Controllers
         {
             _sdServiceMock = new Mock<ISDService>();
             _imageRepositoryMock = new Mock<IImageRepository>();
-            _imageController = new ImageController(_sdServiceMock.Object, _imageRepositoryMock.Object);
+            _imageServiceMock = new Mock<IImageService>();
+            _imageController = new ImageController(_sdServiceMock.Object, _imageRepositoryMock.Object, _imageServiceMock.Object);
 
             var claims = new List<Claim>
             {
@@ -39,47 +42,48 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetAllImagesAsync_ReturnsOk_WithImageList()
         {
-            var images = new List<Image>
+            // Arrange
+            var images = new List<ImageDto>
             {
-                new Image { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, UserId = Guid.NewGuid(), Request = new SDRequest() },
-                new Image { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, UserId = Guid.NewGuid(), Request = new SDRequest() },
-                new Image { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, UserId = Guid.NewGuid(), Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", Request = new SDRequest() }
             };
 
             int pageNumber = 1, pageSize = 10;
-            _imageRepositoryMock.Setup(repo => repo.GetAllImagesAsync(pageNumber, pageSize)).ReturnsAsync(images);
-
+            _imageServiceMock.Setup(service => service.GetAllImagesAsync(pageNumber, pageSize, _user)).ReturnsAsync((HttpStatusCode.OK, images));
+            
+            // Act
             var result = await _imageController.GetAllImagesAsync();
 
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<Image>>>(result);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var returnedImages = Assert.IsAssignableFrom<IEnumerable<Image>>(okResult.Value);
-
-            Assert.Equal(images.Count, returnedImages.Count());
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ApiResponse<IEnumerable<ImageDto>>>(objectResult.Value);
+            Assert.Equal(images, response.Data);
         }
 
         [Fact]
         public async Task GetImageByIdAsync_ReturnsOk_WhenImageExists()
         {
-            var imageId = Guid.NewGuid();
-            var image = new Image
+            // Arrange
+            var image = new ImageDto
             {
-                Id = imageId,
+                Id = Guid.NewGuid(),
                 Url = "/Images/example.png",
                 CreationTime = DateTime.UtcNow,
-                UserId = Guid.NewGuid(),
+                CreatedBy = "CreatedBy",
                 Request = new SDRequest()
             };
 
-            _imageRepositoryMock.Setup(repo => repo.GetImageByIdAsync(imageId)).ReturnsAsync(image);
+            _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id)).ReturnsAsync((HttpStatusCode.OK, image));
 
-            var result = await _imageController.GetImageByIdAsync(imageId);
+            // Act
+            var result = await _imageController.GetImageByIdAsync(image.Id);
 
-            var actionResult = Assert.IsType<ActionResult<Image>>(result);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var returnedImage = Assert.IsType<Image>(okResult.Value);
-
-            Assert.Equal(imageId, returnedImage.Id);
+            // Assert
+            var objectResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<ApiResponse<ImageDto>>(objectResult.Value);
+            Assert.Equal(image, response.Data);
         }
 
         [Fact]

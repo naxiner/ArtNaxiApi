@@ -62,6 +62,13 @@ namespace ArtNaxiApi.Repositories
             return await _context.Images.CountAsync();
         }
 
+        public async Task<int> GetTotalPublicImagesCountAsync()
+        {
+            return await _context.Images
+                .Where(image => image.IsPublic)
+                .CountAsync();
+        }
+
         public async Task<int> GetTotalImagesCountByUserIdAsync(Guid userId)
         {
             return await _context.Images

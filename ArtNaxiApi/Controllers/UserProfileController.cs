@@ -23,8 +23,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("User with this Id not found.")),
                 HttpStatusCode.OK => Ok(new UserProfileResponse(userProfileDto)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("User with this Id not found.")),
                 _ => BadRequest()
             };
         }
@@ -36,8 +36,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
+                HttpStatusCode.OK => Ok(new AvatarResponse(String.Empty, userAvatarUrl)),
                 HttpStatusCode.NotFound => NotFound(new AvatarResponse("Avatar not found.", userAvatarUrl)),
-                HttpStatusCode.OK => Ok(new AvatarResponse("", userAvatarUrl)),
                 _ => BadRequest()
             };
         }
@@ -50,9 +50,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("No file uploaded")),
                 HttpStatusCode.OK => Ok(new AvatarResponse("Avatar updated successful.", userAvatarUrl)),
+                HttpStatusCode.Forbidden => Forbid(),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("No file uploaded.")),
                 _ => BadRequest()
             };
         }
@@ -65,8 +65,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to delete this avatar.")),
                 HttpStatusCode.OK => Ok(new MessageResponse("Avatar deleted successfully.")),
+                HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to delete this avatar.")),
                 _ => BadRequest()
             };
         }

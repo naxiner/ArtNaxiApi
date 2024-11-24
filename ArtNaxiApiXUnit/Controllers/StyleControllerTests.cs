@@ -37,7 +37,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetStyleByIdAsync_ReturnsOk_WithStyle()
         {
-            // Assert
+            // Arrange
             Guid styleId = Guid.NewGuid();
             var style = new StyleDto() 
             { 
@@ -60,7 +60,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetStyleByIdAsync_ReturnsNotFound_WhenStyleNotExist()
         {
-            // Assert
+            // Arrange
             Guid styleId = Guid.NewGuid();
             var style = new StyleDto();
 
@@ -79,7 +79,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetStyleByNameAsync_ReturnsOk_WithStyle()
         {
-            // Assert
+            // Arrange
             Guid styleId = Guid.NewGuid();
             string styleName = "Style Name";
 
@@ -104,7 +104,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetStyleByNameAsync_ReturnsNotFound_WhenStyleNotExist()
         {
-            // Assert
+            // Arrange
             string styleName = "Style Name";
             var style = new StyleDto();
 
@@ -123,7 +123,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetAllStylesAsync_ReturnsOk_WithAllStylesList()
         {
-            // Assert
+            // Arrange
             var styles = new List<StyleDto>
             {
                 new StyleDto { Id = Guid.NewGuid(), Name = "Style1" },
@@ -150,7 +150,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetAllStylesAsync_ReturnsNotFound_WhenStylesNotExist()
         {
-            // Assert
+            // Arrange
             var styles = new List<StyleDto>();
             int pageNumber = 1, pageSize = 10;
             var totalPages = (int)Math.Ceiling(0 / (double)pageSize);
@@ -170,7 +170,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetTotalStylesCountAsync_ReturnsOk_WithTotalCountStyles()
         {
-            // Assert
+            // Arrange
             var styles = new List<StyleDto>
             {
                 new StyleDto { Id = Guid.NewGuid(), Name = "Style1" },
@@ -186,7 +186,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.GetTotalStylesCountAsync();
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<CountResponse>(objectResult.Value);
             Assert.Equal(totalCount, response.Count);
@@ -195,7 +195,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetTotalStylesCountAsync_ReturnsNotFound_WhenStylesNotExist()
         {
-            // Assert
+            // Arrange
             int totalCount = 0;
 
             _styleServiceMock.Setup(service => service.GetTotalStylesCountAsync())
@@ -204,7 +204,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.GetTotalStylesCountAsync();
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<NotFoundObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Styles not found.", response.Message);
@@ -213,7 +213,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task AddStyleAsync_ReturnsOk_WhenAddedSuccessfully()
         {
-            // Assert
+            // Arrange
             var style = new AddStyleDto
             {
                 Name = "Style Name"
@@ -225,7 +225,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.AddStyleAsync(style);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Style added successfully.", response.Message);
@@ -234,7 +234,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task AddStyleAsync_ReturnsBadRequest_WhenUserNotAllowed()
         {
-            // Assert
+            // Arrange
             var style = new AddStyleDto
             {
                 Name = "Style Name"
@@ -246,7 +246,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.AddStyleAsync(style);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("You are not allowed to add style.", response.Message);
@@ -255,7 +255,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task AddStyleAsync_ReturnsConflict_WhenStyleNameAlreadyExist()
         {
-            // Assert
+            // Arrange
             var style = new AddStyleDto
             {
                 Name = "Style Name"
@@ -267,7 +267,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.AddStyleAsync(style);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<ConflictObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Style with that name already exist.", response.Message);
@@ -276,7 +276,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DeleteStyleByIdAsync_ReturnsNoContent_WhenStyleDeletedSuccessfully()
         {
-            // Assert
+            // Arrange
             Guid styleId = Guid.NewGuid();
 
             _styleServiceMock.Setup(service => service.DeleteStyleByIdAsync(styleId, _user))
@@ -285,14 +285,14 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.DeleteStyleByIdAsync(styleId);
 
-            // Arrange
+            // Assert
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
         public async Task DeleteStyleByIdAsync_ReturnsNotFound_WhenStyleDoesNotExist()
         {
-            // Assert
+            // Arrange
             Guid styleId = Guid.NewGuid();
 
             _styleServiceMock.Setup(service => service.DeleteStyleByIdAsync(styleId, _user))
@@ -301,7 +301,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _styleController.DeleteStyleByIdAsync(styleId);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<NotFoundObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Style not found.", response.Message);

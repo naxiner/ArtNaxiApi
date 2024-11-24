@@ -547,7 +547,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePublic_ReturnsOk_WhenMakePublicSuccesfully()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
@@ -563,7 +563,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePublic_ReturnsNotFound_WhenImageDoesNotExist()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
@@ -581,7 +581,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePublic_ReturnsForbidden_WhenUserNotOwner()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePublicAsync(imageId))
@@ -597,7 +597,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePrivate_ReturnsOk_WhenMakePrivateSuccesfully()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
@@ -613,7 +613,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePrivate_ReturnsNotFound_WhenImageDoesNotExist()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
@@ -631,7 +631,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task MakeImagePrivate_ReturnsForbidden_WhenUserNotOwner()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _imageServiceMock.Setup(service => service.MakeImagePrivateAsync(imageId))
@@ -647,7 +647,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DeleteImageById_ReturnsNotFound_WhenImageDoesNotExist()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
@@ -656,7 +656,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _imageController.DeleteImageById(imageId);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<NotFoundObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Image not found.", response.Message);
@@ -665,7 +665,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DeleteImageById_ReturnsForbid_WhenUserIsForbidden()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
@@ -674,14 +674,14 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _imageController.DeleteImageById(imageId);
 
-            // Arrange
+            // Assert
             Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
         public async Task DeleteImageById_ReturnsNoContent_WhenImageDeletedSuccessfully()
         {
-            // Assert
+            // Arrange
             var imageId = Guid.NewGuid();
 
             _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
@@ -690,7 +690,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _imageController.DeleteImageById(imageId);
 
-            // Arrange
+            // Assert
             Assert.IsType<NoContentResult>(result);
         }
     }

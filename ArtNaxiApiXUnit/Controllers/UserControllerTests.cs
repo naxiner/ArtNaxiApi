@@ -166,7 +166,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [InlineData("example@@example.com", "Invalid email format.")]
         public async Task RegisterUser_ReturnsBadRequest_WhenEmailIsInvalid(string email, string expectedError)
         {
-            // Assert
+            // Arrange
             var model = new RegistrDto
             {
                 Username = "username",
@@ -179,7 +179,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.RegisterUser(model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<SerializableError>(objectResult.Value);
             Assert.True(response.ContainsKey("Email"));
@@ -189,7 +189,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task RegisterUser_ReturnsBadRequest_WhenPasswordIsEmpty()
         {
-            // Assert
+            // Arrange
             var model = new RegistrDto
             {
                 Username = "username",
@@ -203,7 +203,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.RegisterUser(model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<SerializableError>(objectResult.Value);
             Assert.True(response.ContainsKey("Password"));
@@ -305,15 +305,15 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task Logout_ReturnsOK_WhenLogoutSuccessful()
         {
-            // Assert
+            // Arrange
             _jwtServiceMock.Setup(service => service.RemoveRefreshTokenFromCookie());
 
             // Act
             var result = await _userController.Logout();
 
-            // Arrange
             _jwtServiceMock.Verify(service => service.RemoveRefreshTokenFromCookie(), Times.Once);
             
+            // Assert
             var okResult = Assert.IsType<OkResult>(result);
             Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
 
@@ -378,7 +378,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_ReturnsOk_WhenUserUpdatedSuccessfylly()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -393,7 +393,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("User updated successfully.", response.Message);
@@ -402,7 +402,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_ReturnsNotFound_WhenUserDoesNotExist()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO();
 
@@ -412,7 +412,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<NotFoundObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("User not found.", response.Message);
@@ -421,7 +421,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_ReturnsConflict_WhenUsernameOrEmailAlreadyExist()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -436,7 +436,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<ConflictObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Username or email already exist for another user.", response.Message);
@@ -445,7 +445,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_ReturnsBadRequest_WhenPasswordIsInvalid()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -460,7 +460,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Invalid password.", response.Message);
@@ -469,7 +469,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_ReturnsForbidden_WhenUserNotOwnerOrAdmin()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -484,14 +484,14 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
         public async Task UpdateUser_ReturnsNoContent_WhenNothingChanged()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -506,14 +506,14 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
         public async Task UpdateUser_InvalidUsername_ShouldHaveValidationErrors()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -527,7 +527,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<BadRequestResult>(result);
             Assert.Contains(validationResults, v => v.ErrorMessage == "Username is required.");
         }
@@ -535,7 +535,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_InvalidEmail_ShouldHaveValidationErrors()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -549,7 +549,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<BadRequestResult>(result);
             Assert.Contains(validationResults, v => v.ErrorMessage == "Invalid email format.");
         }
@@ -557,7 +557,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_UsernameTooLong_ShouldHaveValidationErrors()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -571,7 +571,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<BadRequestResult>(result);
             Assert.Contains(validationResults, v => v.ErrorMessage == "Username cannot be longer than 50 characters.");
         }
@@ -579,7 +579,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUser_InvalidPassword_ShouldHaveValidationErrors()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             var model = new UpdateUserDTO
             {
@@ -593,7 +593,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUser(userId, model);
 
-            // Arrange
+            // Assert
             Assert.IsType<BadRequestResult>(result);
             Assert.Contains(validationResults, v => v.ErrorMessage == "Password must be at least 8 characters long.");
         }
@@ -611,7 +611,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUserRole_ReturnsOk_WhenUserRoleUpdatedSuccessfylly()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
@@ -621,7 +621,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUserRole(userId, newRole);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("Role has been successfully assigned.", response.Message);
@@ -630,7 +630,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUserRole_ReturnsBadRequest_WhenUserIsNotAdmin()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
@@ -640,7 +640,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUserRole(userId, newRole);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("You are not allowed to set this role.", response.Message);
@@ -649,7 +649,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task UpdateUserRole_ReturnsNotFound_WhenUserIsNotAdmin()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
@@ -659,7 +659,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Act
             var result = await _userController.UpdateUserRole(userId, newRole);
 
-            // Arrange
+            // Assert
             var objectResult = Assert.IsType<NotFoundObjectResult>(result);
             var response = Assert.IsType<MessageResponse>(objectResult.Value);
             Assert.Equal("User not found.", response.Message);

@@ -21,7 +21,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetLikeCountByEntityId_ReturnsOk_WithLikeCount()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             int count = 10;
 
@@ -40,7 +40,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task GetLikeStatus_ReturnsOk_WithLikeStatus()
         {
-            // Assert
+            // Arrange
             Guid userId = Guid.NewGuid();
             Guid entityId = Guid.NewGuid();
             string entityType = "Image";
@@ -61,7 +61,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task LikeEntity_ReturnsOk_WithLikeStatus()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "Image";
 
@@ -80,7 +80,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task LikeEntity_ReturnsBadRequest_WhenInvalidEntityType()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "InvalidType";
 
@@ -99,7 +99,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task LikeEntity_ReturnsConflict_WhenLikeExist()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "Image";
 
@@ -118,7 +118,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DislikeEntity_ReturnsOk_WithLikeStatus()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "Image";
 
@@ -137,7 +137,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DislikeEntity_ReturnsBadRequest_WhenInvalidEntityType()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "InvalidType";
 
@@ -156,7 +156,7 @@ namespace ArtNaxiApiXUnit.Controllers
         [Fact]
         public async Task DislikeEntity_ReturnsConflict_WhenLikeDoesNotExist()
         {
-            // Assert
+            // Arrange
             Guid entityId = Guid.NewGuid();
             string entityType = "Image";
 

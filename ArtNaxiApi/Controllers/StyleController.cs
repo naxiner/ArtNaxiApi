@@ -26,8 +26,8 @@ namespace ArtNaxiApi.Controllers
             
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 HttpStatusCode.OK => Ok(new StyleResponse(style)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 _ => BadRequest()
             };
         }
@@ -39,8 +39,8 @@ namespace ArtNaxiApi.Controllers
             
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 HttpStatusCode.OK => Ok(new StyleResponse(style)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 _ => BadRequest()
             };
         }
@@ -52,8 +52,8 @@ namespace ArtNaxiApi.Controllers
             
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("Styles not found.")),
                 HttpStatusCode.OK => Ok(new StylesResponse(styles, totalPages)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Styles not found.")),
                 _ => BadRequest()
             };
         }
@@ -65,8 +65,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("Styles not found.")),
                 HttpStatusCode.OK => Ok(new CountResponse(totalCount)),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Styles not found.")),
                 _ => BadRequest()
             };
         }
@@ -80,9 +80,9 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
+                HttpStatusCode.OK => Ok(new MessageResponse("Style added successfully.")),
                 HttpStatusCode.BadRequest => BadRequest(new MessageResponse("You are not allowed to add style.")),
                 HttpStatusCode.Conflict => Conflict(new MessageResponse("Style with that name already exist.")),
-                HttpStatusCode.OK => Ok(new MessageResponse("Style added successfully.")),
                 _ => BadRequest()
             };
         }
@@ -96,8 +96,8 @@ namespace ArtNaxiApi.Controllers
 
             return result switch
             {
-                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 HttpStatusCode.NoContent => NoContent(),
+                HttpStatusCode.NotFound => NotFound(new MessageResponse("Style not found.")),
                 _ => BadRequest()
             };
         }

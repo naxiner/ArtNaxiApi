@@ -193,11 +193,11 @@ namespace ArtNaxiApi.Services
             return HttpStatusCode.NoContent;
         }
 
-        public async Task<HttpStatusCode> UpdateUserRoleByIdAsync(Guid id, string role, ClaimsPrincipal userClaim)
+        public async Task<HttpStatusCode> UpdateUserRoleByIdAsync(Guid id, string role, ClaimsPrincipal userClaim, bool isInitialization)
         {
-            if (!userClaim.IsInRole(Roles.Admin))
+            if (!isInitialization && !userClaim.IsInRole(Roles.Admin))
             {
-                return HttpStatusCode.BadRequest;    // You are not allowed to set roles
+                return HttpStatusCode.BadRequest; // You are not allowed to set roles
             }
 
             var user = await _userRepository.GetUserByIdAsync(id);

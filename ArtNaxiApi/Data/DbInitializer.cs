@@ -29,13 +29,13 @@ namespace ArtNaxiApi.Data
                 {
                     Username = username,
                     Email = email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(password)
+                    Password = password
                 });
 
                 var adminUser = await userService.GetUserByNameAsync(username);
                 if (adminUser != null)
                 {
-                    var updateStatus = await userService.UpdateUserRoleByIdAsync(adminUser.Id, Roles.Admin, new System.Security.Claims.ClaimsPrincipal());
+                    var updateStatus = await userService.UpdateUserRoleByIdAsync(adminUser.Id, Roles.Admin, new System.Security.Claims.ClaimsPrincipal(), true);
                 }
             }
         }

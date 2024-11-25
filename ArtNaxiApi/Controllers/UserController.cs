@@ -100,7 +100,7 @@ namespace ArtNaxiApi.Controllers
         [HttpPost("{id}/role")]
         public async Task<ActionResult> UpdateUserRole(Guid id, string role)
         {
-            var result = await _userService.UpdateUserRoleByIdAsync(id, role, User);
+            var result = await _userService.UpdateUserRoleByIdAsync(id, role, User, false);
 
             return result switch
             {

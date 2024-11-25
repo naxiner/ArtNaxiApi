@@ -615,7 +615,7 @@ namespace ArtNaxiApiXUnit.Controllers
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
-            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user))
+            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user, false))
                 .ReturnsAsync(HttpStatusCode.OK);
 
             // Act
@@ -634,7 +634,7 @@ namespace ArtNaxiApiXUnit.Controllers
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
-            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user))
+            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user, false))
                 .ReturnsAsync(HttpStatusCode.BadRequest);
 
             // Act
@@ -653,7 +653,7 @@ namespace ArtNaxiApiXUnit.Controllers
             Guid userId = Guid.NewGuid();
             string newRole = Roles.User;
 
-            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user))
+            _userServiceMock.Setup(service => service.UpdateUserRoleByIdAsync(userId, newRole, _user, false))
                 .ReturnsAsync(HttpStatusCode.NotFound);
 
             // Act

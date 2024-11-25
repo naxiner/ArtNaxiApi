@@ -1,0 +1,40 @@
+services:
+  artnaxiapi:
+    build:
+      context: ./ArtNaxiApi
+      dockerfile: Dockerfile
+    ports:
+    - "8080:8080"
+    - "8081:8081"
+    depends_on:
+    - sqlserver
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - STABLE_DIFFUSION_API_URL=http://host.docker.internal:7860/sdapi/v1/txt2img
+    volumes:
+    - avatarsvolume:/app/wwwroot/avatars
+    - imagesvolume:/app/wwwroot/Images
+    networks:
+    - naxinetwork
+    restart: on-failure
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Test123!"
+      ACCEPT_EULA: "Y"
+    ports:
+    - "1433:1433"
+    volumes:
+    - sqlvolume:/var/opt/mssql
+    networks:
+    - naxinetwork
+
+networks:
+  naxinetwork:
+    driver: bridge
+  
+volumes:
+  sqlvolume:
+  avatarsvolume:
+  imagesvolume:

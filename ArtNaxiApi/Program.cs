@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using StackExchange.Redis;
+using ArtNaxiApi.Services.Cached;
+using Microsoft.Extensions.Caching.Distributed;
+
 
 namespace ArtNaxiApi
 {
@@ -15,6 +19,19 @@ namespace ArtNaxiApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddStackExchangeRedisCache(redisOptions =>
+            {
+                string connection = builder.Configuration.GetConnectionString("Redis");
+
+                redisOptions.Configuration = connection;
+            });
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var connectionString = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(connectionString);
+            });
 
             builder.Services.AddCors(options =>
             {
@@ -95,7 +112,14 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-            builder.Services.AddScoped<IImageService, ImageService>();
+            builder.Services.AddScoped<ImageService>();
+            builder.Services.AddScoped<IImageService>(provider =>
+            {
+                var baseService = provider.GetRequiredService<ImageService>();
+                var redis = provider.GetRequiredService<IConnectionMultiplexer>();
+                var cache = provider.GetRequiredService<IDistributedCache>();
+                return new CachedImageService(cache, redis, baseService);
+            });
             builder.Services.AddScoped<ISDService, SDService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
             builder.Services.AddScoped<ILikeService, LikeService>();

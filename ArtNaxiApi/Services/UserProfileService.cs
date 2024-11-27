@@ -189,7 +189,21 @@ namespace ArtNaxiApi.Services
                     CreationTime = image.CreationTime,
                     CreatedBy = image.CreatedBy,
                     IsPublic = image.IsPublic,
-                    Request = image.Request
+                    UserId = image.Id,
+                    Request = new SDRequestDto
+                    {
+                        Id = image.Request.Id,
+                        Prompt = image.Request.Prompt,
+                        NegativePrompt = image.Request.NegativePrompt,
+                        Styles = image.Request.Styles,
+                        Seed = image.Request.Seed,
+                        SamplerName = image.Request.SamplerName,
+                        Scheduler = image.Request.Scheduler,
+                        Steps = image.Request.Steps,
+                        CfgScale = image.Request.CfgScale,
+                        Width = image.Request.Width,
+                        Height = image.Request.Height
+                    }
                 }).ToList()
             };
         }

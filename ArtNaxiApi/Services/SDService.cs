@@ -15,9 +15,9 @@ namespace ArtNaxiApi.Services
         private readonly IImageRepository _imageRepository;
         private readonly IStyleRepository _styleRepository;
         private readonly IUserRepository _userRepository;
-        private readonly IUserService _userService;
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly ILikeRepository _likeRepository;
+        private readonly IUserService _userService;
         private readonly string _apiUrlTextToImg;
 
         public SDService(
@@ -25,18 +25,18 @@ namespace ArtNaxiApi.Services
             IImageRepository imageRepository,
             IStyleRepository styleRepository,
             IUserRepository userRepository,
-            IUserService userService,
             IUserProfileRepository userProfileRepository,
             ILikeRepository likeRepository,
+            IUserService userService,
             IConfiguration configuration)
         {
             _httpClient = httpClient;
             _imageRepository = imageRepository;
             _styleRepository = styleRepository;
             _userRepository = userRepository;
-            _userService = userService;
             _userProfileRepository = userProfileRepository;
             _likeRepository = likeRepository;
+            _userService = userService;
             _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
         }
 
@@ -111,6 +111,21 @@ namespace ArtNaxiApi.Services
             await _imageRepository.AddImageAsync(image);
             await _userProfileRepository.UpdateAsync(userProfile);
 
+            var requestDto = new SDRequestDto
+            {
+                Id = request.Id,
+                Prompt = request.Prompt,
+                NegativePrompt = request.NegativePrompt,
+                Styles = request.Styles,
+                Seed = request.Seed,
+                SamplerName = request.SamplerName,
+                Scheduler = request.Scheduler,
+                Steps = request.Steps,
+                CfgScale = request.CfgScale,
+                Width = request.Width,
+                Height = request.Height
+            };
+
             var imageDto = new ImageDto
             {
                 Id = image.Id,
@@ -118,7 +133,8 @@ namespace ArtNaxiApi.Services
                 CreationTime = image.CreationTime,
                 CreatedBy = image.CreatedBy,
                 IsPublic = image.IsPublic,
-                Request = image.Request
+                UserId = image.UserId,
+                Request = requestDto
             };
 
             return (HttpStatusCode.OK, imageDto);

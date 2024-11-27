@@ -1,4 +1,5 @@
-﻿using ArtNaxiApi.Models.DTO;
+﻿using ArtNaxiApi.Models;
+using ArtNaxiApi.Models.DTO;
 using System.Net;
 using System.Security.Claims;
 
@@ -15,5 +16,7 @@ namespace ArtNaxiApi.Services
         Task<(HttpStatusCode, IEnumerable<ImageDto>, int)> GetRecentPublicImagesAsync(int pageNumber, int pageSize);
         Task<HttpStatusCode> MakeImagePrivateAsync(Guid id);
         Task<HttpStatusCode> MakeImagePublicAsync(Guid id);
+        Task<(HttpStatusCode, ImageDto?)> GenerateImageAsync(SDRequest sdRequest);
+        Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal userClaim);
     }
 }

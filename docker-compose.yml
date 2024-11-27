@@ -8,6 +8,7 @@ services:
     - "8081:8081"
     depends_on:
     - sqlserver
+    - redis
     environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - STABLE_DIFFUSION_API_URL=http://host.docker.internal:7860/sdapi/v1/txt2img
@@ -27,6 +28,13 @@ services:
     - "1433:1433"
     volumes:
     - sqlvolume:/var/opt/mssql
+    networks:
+    - naxinetwork
+  
+  redis:
+    image: redis:latest
+    ports:
+    - "6379:6379"
     networks:
     - naxinetwork
 

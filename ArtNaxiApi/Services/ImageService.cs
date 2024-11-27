@@ -11,10 +11,15 @@ namespace ArtNaxiApi.Services
     {
         private readonly IImageRepository _imageRepository;
         private readonly IUserService _userService;
+        private readonly ISDService _sdService;
 
-        public ImageService(IImageRepository imageRepository, IUserService userService)
+        public ImageService(
+            IImageRepository imageRepository,
+            ISDService sdService,
+            IUserService userService)
         {
             _imageRepository = imageRepository;
+            _sdService = sdService;
             _userService = userService;
         }
 
@@ -35,15 +40,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalImagesCountAsync();
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = images.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = images.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -57,15 +54,7 @@ namespace ArtNaxiApi.Services
                 return (HttpStatusCode.NotFound, null);     // Image not found
             }
 
-            var imageDto = new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            };
+            var imageDto = MapImageToDto(image);
 
             return (HttpStatusCode.OK, imageDto);
         }
@@ -87,15 +76,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalImagesCountByUserIdAsync(userId);
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = userImages.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = userImages.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -112,15 +93,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountByUserIdAsync(userId);
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = userImages.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = userImages.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -137,15 +110,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalImagesCountAsync();
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = recentImages.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = recentImages.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -162,15 +127,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountAsync();
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = recentPublicImages.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = recentPublicImages.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -187,15 +144,7 @@ namespace ArtNaxiApi.Services
             var totalImagesCount = await _imageRepository.GetTotalPublicImagesCountAsync();
             var totalPages = (int)Math.Ceiling(totalImagesCount / (double)pageSize);
 
-            var imagesDto = popularPublicImages.Select(image => new ImageDto
-            {
-                Id = image.Id,
-                Url = image.Url,
-                CreationTime = image.CreationTime,
-                CreatedBy = image.CreatedBy,
-                IsPublic = image.IsPublic,
-                Request = image.Request
-            });
+            var imagesDto = popularPublicImages.Select(MapImageToDto);
 
             return (HttpStatusCode.OK, imagesDto, totalPages);
         }
@@ -236,6 +185,43 @@ namespace ArtNaxiApi.Services
             await _imageRepository.SetImageVisibilityAsync(id, false);
 
             return HttpStatusCode.OK;
+        }
+
+        public async Task<(HttpStatusCode, ImageDto?)> GenerateImageAsync(SDRequest sdRequest)
+        {
+            return await _sdService.GenerateImageAsync(sdRequest);
+        }
+
+        public async Task<HttpStatusCode> DeleteImageByIdAsync(Guid id, ClaimsPrincipal userClaim)
+        {
+            return await _sdService.DeleteImageByIdAsync(id, userClaim);
+        }
+
+        private ImageDto MapImageToDto(Image image)
+        {
+            return new ImageDto
+            {
+                Id = image.Id,
+                Url = image.Url,
+                CreationTime = image.CreationTime,
+                CreatedBy = image.CreatedBy,
+                IsPublic = image.IsPublic,
+                UserId = image.UserId,
+                Request = new SDRequestDto
+                {
+                    Id = image.Request.Id,
+                    Prompt = image.Request.Prompt,
+                    NegativePrompt = image.Request.NegativePrompt,
+                    Styles = image.Request.Styles,
+                    Seed = image.Request.Seed,
+                    SamplerName = image.Request.SamplerName,
+                    Scheduler = image.Request.Scheduler,
+                    Steps = image.Request.Steps,
+                    CfgScale = image.Request.CfgScale,
+                    Width = image.Request.Width,
+                    Height = image.Request.Height
+                }
+            };
         }
     }
 }

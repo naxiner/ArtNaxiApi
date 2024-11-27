@@ -124,7 +124,7 @@ namespace ArtNaxiApi.Controllers
         [HttpPost]
         public async Task<ActionResult> GenerateImage(SDRequest sdRequest)
         {
-            var (result, image) = await _sdService.GenerateImageAsync(sdRequest);
+            var (result, image) = await _imageService.GenerateImageAsync(sdRequest);
 
             return result switch
             {
@@ -172,7 +172,7 @@ namespace ArtNaxiApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteImageById(Guid id)
         {
-            var result = await _sdService.DeleteImageByIdAsync(id, User);
+            var result = await _imageService.DeleteImageByIdAsync(id, User);
 
             return result switch
             {

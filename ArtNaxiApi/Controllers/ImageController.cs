@@ -1,11 +1,8 @@
 ﻿using ArtNaxiApi.Filters;
 using ArtNaxiApi.Models;
-using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Models.DTO.Responses;
-using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -15,12 +12,10 @@ namespace ArtNaxiApi.Controllers
     [Route("api/[controller]")]
     public class ImageController : ControllerBase
     {
-        private readonly ISDService _sdService;
         private readonly IImageService _imageService;
 
-        public ImageController(ISDService sdService, IImageService imageService)
+        public ImageController(IImageService imageService)
         {
-            _sdService = sdService;
             _imageService = imageService;
         }
 

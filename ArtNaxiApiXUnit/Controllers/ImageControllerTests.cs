@@ -2,13 +2,10 @@
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
 using ArtNaxiApi.Models.DTO.Responses;
-using ArtNaxiApi.Repositories;
 using ArtNaxiApi.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Dynamic;
 using System.Net;
 using System.Security.Claims;
 
@@ -16,16 +13,14 @@ namespace ArtNaxiApiXUnit.Controllers
 {
     public class ImageControllerTests
     {
-        private readonly Mock<ISDService> _sdServiceMock;
         private readonly Mock<IImageService> _imageServiceMock;
         private readonly ImageController _imageController;
         private readonly ClaimsPrincipal _user;
 
         public ImageControllerTests()
         {
-            _sdServiceMock = new Mock<ISDService>();
             _imageServiceMock = new Mock<IImageService>();
-            _imageController = new ImageController(_sdServiceMock.Object, _imageServiceMock.Object);
+            _imageController = new ImageController(_imageServiceMock.Object);
 
             var claims = new List<Claim>
             {
@@ -44,9 +39,9 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -115,7 +110,7 @@ namespace ArtNaxiApiXUnit.Controllers
                 CreationTime = DateTime.UtcNow,
                 CreatedBy = "CreatedBy",
                 IsPublic = false,
-                Request = new SDRequest()
+                Request = new SDRequestDto()
             };
 
             _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id))
@@ -141,7 +136,7 @@ namespace ArtNaxiApiXUnit.Controllers
                 CreationTime = DateTime.UtcNow,
                 CreatedBy = "CreatedBy",
                 IsPublic = false,
-                Request = new SDRequest()
+                Request = new SDRequestDto()
             };
 
             _imageServiceMock.Setup(service => service.GetImageByIdAsync(image.Id))
@@ -163,9 +158,9 @@ namespace ArtNaxiApiXUnit.Controllers
             var userId = Guid.NewGuid();
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -235,9 +230,9 @@ namespace ArtNaxiApiXUnit.Controllers
             var userId = Guid.NewGuid();
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -286,9 +281,9 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -335,9 +330,9 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -384,9 +379,9 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var images = new List<ImageDto>
             {
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() },
-                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequest() }
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = true, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() },
+                new ImageDto { Id = Guid.NewGuid(), Url = $"/Images/{Guid.NewGuid}.png", CreationTime = DateTime.UtcNow, CreatedBy = "CreatedBy", IsPublic = false, Request = new SDRequestDto() }
             };
 
             int pageNumber = 1, pageSize = 10;
@@ -444,6 +439,19 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
+            var sdRequestDto = new SDRequestDto
+            {
+                Prompt = sdRequest.Prompt,
+                NegativePrompt = sdRequest.NegativePrompt,
+                Styles = sdRequest.Styles,
+                SamplerName = sdRequest.SamplerName,
+                Scheduler = sdRequest.Scheduler,
+                Steps = sdRequest.Steps,
+                CfgScale = sdRequest.CfgScale,
+                Width = sdRequest.Width,
+                Height = sdRequest.Height
+            };
+
             var expectedImage = new ImageDto
             {
                 Id = Guid.NewGuid(),
@@ -451,10 +459,10 @@ namespace ArtNaxiApiXUnit.Controllers
                 CreationTime = DateTime.Now,
                 CreatedBy = "CreatedBy",
                 IsPublic = false,
-                Request = sdRequest
+                Request = sdRequestDto
             };
 
-            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
+            _imageServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
                 .ReturnsAsync((HttpStatusCode.OK, expectedImage));
 
             // Act
@@ -483,6 +491,19 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
+            var sdRequestDto = new SDRequestDto
+            {
+                Prompt = sdRequest.Prompt,
+                NegativePrompt = sdRequest.NegativePrompt,
+                Styles = sdRequest.Styles,
+                SamplerName = sdRequest.SamplerName,
+                Scheduler = sdRequest.Scheduler,
+                Steps = sdRequest.Steps,
+                CfgScale = sdRequest.CfgScale,
+                Width = sdRequest.Width,
+                Height = sdRequest.Height
+            };
+
             var expectedImage = new ImageDto
             {
                 Id = Guid.NewGuid(),
@@ -490,10 +511,10 @@ namespace ArtNaxiApiXUnit.Controllers
                 CreationTime = DateTime.Now,
                 CreatedBy = "CreatedBy",
                 IsPublic = false,
-                Request = sdRequest
+                Request = sdRequestDto
             };
 
-            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
+            _imageServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
                 .ReturnsAsync((HttpStatusCode.InternalServerError, expectedImage));
 
             // Act
@@ -522,6 +543,19 @@ namespace ArtNaxiApiXUnit.Controllers
                 Height = 512
             };
 
+            var sdRequestDto = new SDRequestDto
+            {
+                Prompt = sdRequest.Prompt,
+                NegativePrompt = sdRequest.NegativePrompt,
+                Styles = sdRequest.Styles,
+                SamplerName = sdRequest.SamplerName,
+                Scheduler = sdRequest.Scheduler,
+                Steps = sdRequest.Steps,
+                CfgScale = sdRequest.CfgScale,
+                Width = sdRequest.Width,
+                Height = sdRequest.Height
+            };
+
             var expectedImage = new ImageDto
             {
                 Id = Guid.NewGuid(),
@@ -529,10 +563,10 @@ namespace ArtNaxiApiXUnit.Controllers
                 CreationTime = DateTime.Now,
                 CreatedBy = "CreatedBy",
                 IsPublic = false,
-                Request = sdRequest
+                Request = sdRequestDto
             };
 
-            _sdServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
+            _imageServiceMock.Setup(service => service.GenerateImageAsync(sdRequest))
                 .ReturnsAsync((HttpStatusCode.ServiceUnavailable, expectedImage));
 
             // Act
@@ -650,7 +684,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var imageId = Guid.NewGuid();
 
-            _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
+            _imageServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.NotFound);
 
             // Act
@@ -668,7 +702,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var imageId = Guid.NewGuid();
 
-            _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
+            _imageServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.Forbidden);
 
             // Act
@@ -684,7 +718,7 @@ namespace ArtNaxiApiXUnit.Controllers
             // Arrange
             var imageId = Guid.NewGuid();
 
-            _sdServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
+            _imageServiceMock.Setup(service => service.DeleteImageByIdAsync(imageId, _user))
                 .ReturnsAsync(HttpStatusCode.NoContent);
 
             // Act

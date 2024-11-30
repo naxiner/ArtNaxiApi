@@ -10,6 +10,7 @@ using System.Text;
 using StackExchange.Redis;
 using ArtNaxiApi.Services.Cached;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Security.Cryptography.X509Certificates;
 
 
 namespace ArtNaxiApi
@@ -19,6 +20,14 @@ namespace ArtNaxiApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ConfigureHttpsDefaults(httpsOptions =>
+                {
+                    httpsOptions.ServerCertificate = new X509Certificate2("Certificates/artnaxiapi.pfx", "Test123!");
+                });
+            });
 
             builder.Services.AddStackExchangeRedisCache(redisOptions =>
             {

@@ -25,7 +25,7 @@ namespace ArtNaxiApi
             {
                 options.ConfigureHttpsDefaults(httpsOptions =>
                 {
-                    httpsOptions.ServerCertificate = new X509Certificate2("Certificates/artnaxiapi.pfx", "Test123!");
+                    httpsOptions.ServerCertificate = new X509Certificate2("certificates/artnaxiapi.pfx", "Test123!");
                 });
             });
 

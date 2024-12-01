@@ -28,6 +28,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 RUN mkdir -p /app/certificates
-COPY Certificates/artnaxiapi.pfx /app/certificates/
+COPY certificates/artnaxiapi.pfx /app/certificates/
 
 ENTRYPOINT ["dotnet", "ArtNaxiApi.dll"]

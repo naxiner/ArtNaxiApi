@@ -23,6 +23,13 @@ services:
     - naxinetwork
     restart: on-failure
   
+  frontend:
+    image: naxiner/artnaxi-frontend:latest
+    ports:
+    - "4200:4200"
+    networks:
+    - naxinetwork
+  
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:

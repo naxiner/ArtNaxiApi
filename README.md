@@ -77,6 +77,9 @@ API will be available at:
 - https://localhost:7069
 - http://localhost:5256
 
+[Frontend](https://github.com/naxiner/ArtNaxiFrontend/) will be available at:
+- https://localhost:4200
+
 At the first launch, a user with Admin role is automatically created.
 Username: `admin`, Password: `Test123!`.
 
@@ -96,6 +99,9 @@ docker-compose up --build
 API will be available at: 
 - https://localhost:8081
 - http://localhost:8080
+
+[Frontend](https://github.com/naxiner/ArtNaxiFrontend/) will be available at:
+- https://localhost:4200
 
 At the first launch, a user with Admin role is automatically created.
 Username: `admin`, Password: `Test123!`.

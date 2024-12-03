@@ -59,7 +59,7 @@ namespace ArtNaxiApi
             builder.Services.AddDbContext<AppDbContext>(
                 options => options.UseSqlServer(builder.Configuration
                 .GetConnectionString("ArtNaxiDbConnectionString"))
-                );
+            );
 
             builder.Services.AddHttpClient();
             builder.Services.AddHttpContextAccessor();
@@ -112,12 +112,28 @@ namespace ArtNaxiApi
                 };
             });
 
+            // Check Redis connection
+            bool isRedisAvailable;
+            try
+            {
+                var multiplexer = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
+                isRedisAvailable = multiplexer.IsConnected;
+                builder.Services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Redis unavailable: {ex.Message}");
+                isRedisAvailable = false;
+            }
+
+            // Repositories
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IImageRepository, ImageRepository>();
             builder.Services.AddScoped<IStyleRepository, StyleRepository>();
             builder.Services.AddScoped<ILikeRepository, LikeRepository>();
 
+            // Services
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
@@ -125,14 +141,21 @@ namespace ArtNaxiApi
             builder.Services.AddScoped<IImageService>(provider =>
             {
                 var baseService = provider.GetRequiredService<ImageService>();
-                var redis = provider.GetRequiredService<IConnectionMultiplexer>();
-                var cache = provider.GetRequiredService<IDistributedCache>();
-                return new CachedImageService(cache, redis, baseService);
+
+                if (isRedisAvailable)
+                {
+                    var redis = provider.GetRequiredService<IConnectionMultiplexer>();
+                    var cache = provider.GetRequiredService<IDistributedCache>();
+                    return new CachedImageService(cache, redis, baseService);
+                }
+
+                return baseService;
             });
             builder.Services.AddScoped<ISDService, SDService>();
             builder.Services.AddScoped<IStyleService, StyleService>();
             builder.Services.AddScoped<ILikeService, LikeService>();
 
+            // Attributes
             builder.Services.AddScoped<CheckBanAttribute>();
 
             var app = builder.Build();

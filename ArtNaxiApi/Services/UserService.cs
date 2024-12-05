@@ -316,12 +316,12 @@ namespace ArtNaxiApi.Services
             return (HttpStatusCode.OK, usersDto, totalPages);
         }
 
-        public async Task<User> GetUserByIdAsync(Guid id)
+        public async Task<User?> GetUserByIdAsync(Guid id)
         {
             return await _userRepository.GetUserByIdAsync(id);
         }
 
-        public async Task<User> GetUserByNameAsync(string username)
+        public async Task<User?> GetUserByNameAsync(string username)
         {
             return await _userRepository.GetUserByNameAsync(username);
         }

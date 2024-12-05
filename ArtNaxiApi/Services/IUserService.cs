@@ -16,8 +16,8 @@ namespace ArtNaxiApi.Services
         Guid GetCurrentUserId();
         Task<(HttpStatusCode, IEnumerable<UserDto>?, int)> GetAllUsersAsync(ClaimsPrincipal userClaim, int pageNumber, int pageSize);
         Task<(HttpStatusCode, IEnumerable<UserDto>?, int)> SearchUsersAsync(string query, int pageNumber, int pageSize, ClaimsPrincipal userClaim);
-        Task<User> GetUserByIdAsync(Guid id);
-        Task<User> GetUserByNameAsync(string username);
+        Task<User?> GetUserByIdAsync(Guid id);
+        Task<User?> GetUserByNameAsync(string username);
         Task<HttpStatusCode> BanUnbanUserByIdAsync(Guid id, bool isBanned, ClaimsPrincipal userClaim);
     }
 }

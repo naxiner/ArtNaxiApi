@@ -12,7 +12,7 @@ namespace ArtNaxiApi.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<User>?> GetAllUsersAsync(int pageNumber, int pageSize)
         {
             return await _context.Users
                 .Skip((pageNumber - 1) * pageSize)
@@ -45,7 +45,7 @@ namespace ArtNaxiApi.Repositories
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task<User> GetUserByNameOrEmailAsync(string usernameOrEmail)
+        public async Task<User?> GetUserByNameOrEmailAsync(string usernameOrEmail)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == usernameOrEmail || u.Email == usernameOrEmail);
         }

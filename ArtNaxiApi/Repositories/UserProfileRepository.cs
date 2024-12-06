@@ -18,7 +18,7 @@ namespace ArtNaxiApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<UserProfile> GetProfileByUserIdAsync(Guid userId)
+        public async Task<UserProfile?> GetProfileByUserIdAsync(Guid userId)
         {
             return await _context.UserProfiles
                 .Include(i => i.User)

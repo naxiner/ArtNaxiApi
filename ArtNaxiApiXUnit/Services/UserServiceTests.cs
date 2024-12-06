@@ -18,8 +18,7 @@ namespace ArtNaxiApiXUnit.Services
         private readonly Mock<IJwtService> _jwtServiceMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
         private readonly UserService _userService;
-        private readonly ClaimsPrincipal _user;
-
+        
         public UserServiceTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
@@ -34,15 +33,6 @@ namespace ArtNaxiApiXUnit.Services
                 _jwtServiceMock.Object,
                 _httpContextAccessorMock.Object
             );
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())
-            };
-            _user = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
-
-            var httpContext = new DefaultHttpContext { User = _user };
-            _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(httpContext);
         }
 
         [Fact]

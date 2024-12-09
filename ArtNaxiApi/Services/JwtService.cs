@@ -95,6 +95,11 @@ namespace ArtNaxiApi.Services
 
         public void SetRefreshTokenInCookie(string refreshToken)
         {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return;
+            }
+
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,

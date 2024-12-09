@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace ArtNaxiApiXUnit.Services
@@ -14,18 +15,28 @@ namespace ArtNaxiApiXUnit.Services
     {
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private readonly Mock<IResponseCookies> _responseCookiesMock;
+        private readonly Mock<HttpResponse> _httpResponseMock;
         private readonly JwtService _jwtService;
 
         public JwtServiceTests()
         {
             _configurationMock = new Mock<IConfiguration>();
             _userRepositoryMock = new Mock<IUserRepository>();
-            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            _responseCookiesMock = new Mock<IResponseCookies>();
+            _httpResponseMock = new Mock<HttpResponse>();
+
+            var httpContextMock = new Mock<HttpContext>();
+            httpContextMock.Setup(ctx => ctx.Response).Returns(_httpResponseMock.Object);
+            _httpResponseMock.Setup(resp => resp.Cookies).Returns(_responseCookiesMock.Object);
+            _httpContextAccessorMock.Setup(accessor => accessor.HttpContext).Returns(httpContextMock.Object);
 
             _jwtService = new JwtService(
                 _configurationMock.Object,
                 _userRepositoryMock.Object,
-                httpContextAccessorMock.Object);
+                _httpContextAccessorMock.Object);
         }
 
         [Fact]
@@ -180,6 +191,115 @@ namespace ArtNaxiApiXUnit.Services
 
             // Assert
             Assert.False(result);
+        }
+
+        [Fact]
+        public void GetPrincipalFromExpiredToken_ReturnsPrincipal_WhenTokenIsValid()
+        {
+            // Arrange
+            var secretKey = "MySuperSecretKey12345MySuperSecretKey12345!";
+            _configurationMock
+                .Setup(c => c["Jwt:Secret"])
+                .Returns(secretKey);
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, "user@example.com"),
+                new Claim(ClaimTypes.Role, "User")
+            };
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddSeconds(-1),
+                signingCredentials: credentials);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            // Act
+            var principal = _jwtService.GetPrincipalFromExpiredToken(tokenString);
+
+            // Assert
+            Assert.NotNull(principal);
+            Assert.IsType<ClaimsPrincipal>(principal);
+            Assert.Equal("user@example.com", principal.Identity.Name);
+            Assert.Contains(principal.Claims, c => c.Type == ClaimTypes.Role && c.Value == "User");
+        }
+
+        [Fact]
+        public void SetRefreshTokenInCookie_ShouldSetCookieWithCorrectOptions()
+        {
+            // Arrange
+            var refreshToken = "test_refresh_token";
+            CookieOptions capturedOptions = null;
+
+            _responseCookiesMock
+                .Setup(cookies => cookies.Append(
+                    "refreshToken",
+                    refreshToken,
+                    It.IsAny<CookieOptions>()))
+                .Callback<string, string, CookieOptions>((key, value, options) =>
+                {
+                    capturedOptions = options;
+                });
+
+            // Act
+            _jwtService.SetRefreshTokenInCookie(refreshToken);
+
+            // Assert
+            _responseCookiesMock.Verify(cookies => cookies.Append("refreshToken", refreshToken, It.IsAny<CookieOptions>()), Times.Once);
+            Assert.NotNull(capturedOptions);
+            Assert.Equal("refreshToken", "refreshToken");
+            Assert.Equal(refreshToken, refreshToken);
+            Assert.True(capturedOptions.HttpOnly);
+            Assert.True(capturedOptions.Secure);
+            Assert.Equal(SameSiteMode.Strict, capturedOptions.SameSite);
+            Assert.True(capturedOptions.Expires.HasValue);
+            Assert.True(capturedOptions.Expires.Value > DateTimeOffset.UtcNow);
+        }
+
+        [Fact]
+        public void SetRefreshTokenInCookie_ShouldNotAppendCookie_WhenRefreshTokenIsNullOrEmpty()
+        {
+            // Act
+            _jwtService.SetRefreshTokenInCookie(null);
+            _jwtService.SetRefreshTokenInCookie(string.Empty);
+
+            // Assert
+            _responseCookiesMock.Verify(cookies => cookies.Append(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CookieOptions>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void RemoveRefreshTokenFromCookie_ShouldDeleteCookieWithCorrectOptions()
+        {
+            // Arrange
+            CookieOptions capturedOptions = null;
+
+            _responseCookiesMock
+                .Setup(cookies => cookies.Delete(
+                    "refreshToken",
+                    It.IsAny<CookieOptions>()))
+                .Callback<string, CookieOptions>((key, options) =>
+                {
+                    capturedOptions = options;
+                });
+
+            // Act
+            _jwtService.RemoveRefreshTokenFromCookie();
+
+            // Assert
+            _responseCookiesMock.Verify(cookies => cookies.Delete("refreshToken",It.IsAny<CookieOptions>()),Times.Once);
+            Assert.NotNull(capturedOptions);
+            Assert.Equal("refreshToken", "refreshToken");
+            Assert.True(capturedOptions.HttpOnly);
+            Assert.True(capturedOptions.Secure);
+            Assert.Equal(SameSiteMode.Strict, capturedOptions.SameSite);
         }
     }
 }

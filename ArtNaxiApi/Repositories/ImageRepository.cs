@@ -19,7 +19,7 @@ namespace ArtNaxiApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetAllImagesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetAllImagesAsync(int pageNumber, int pageSize)
         {
             return await _context.Images
                 .Skip((pageNumber - 1) * pageSize)
@@ -35,7 +35,7 @@ namespace ArtNaxiApi.Repositories
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task<IEnumerable<Image>> GetImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
         {
             return await _context.Images
                 .Where(i => i.UserId == userId)
@@ -46,7 +46,7 @@ namespace ArtNaxiApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetPublicImagesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
         {
             return await _context.Images
                 .Where(i => i.UserId == userId && i.IsPublic)
@@ -83,7 +83,7 @@ namespace ArtNaxiApi.Repositories
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetRecentImagesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetRecentImagesAsync(int pageNumber, int pageSize)
         {
             return await _context.Images
                 .OrderByDescending(i => i.CreationTime)
@@ -93,7 +93,7 @@ namespace ArtNaxiApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Image>> GetPopularPublicImagesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetPopularPublicImagesAsync(int pageNumber, int pageSize)
         {
             var popularImagesQuery = _context.Images
                 .Where(image => image.IsPublic)
@@ -117,7 +117,7 @@ namespace ArtNaxiApi.Repositories
             return popularImages;
         }
 
-        public async Task<IEnumerable<Image>> GetRecentPublicImagesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Image>?> GetRecentPublicImagesAsync(int pageNumber, int pageSize)
         {
             return await _context.Images
                 .Where(i => i.IsPublic)

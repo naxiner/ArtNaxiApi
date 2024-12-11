@@ -246,5 +246,379 @@ namespace ArtNaxiApiXUnit.Services
             Assert.Empty(result.Item2);
             Assert.Equal(0, result.Item3);
         }
+
+        [Fact]
+        public async Task GetPublicImagesByUserIdAsync_ReturnsOK_WhenImagesExist()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImages = new List<Image>
+            {
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() },
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image2.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() }
+            };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetPublicImagesByUserIdAsync(
+                    user.Id, It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(mockImages);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountByUserIdAsync(user.Id))
+                .ReturnsAsync(2);
+
+            // Act
+            var result = await _imageService.GetPublicImagesByUserIdAsync(user.Id, 1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result.Item1);
+            Assert.NotEmpty(result.Item2);
+            Assert.Equal(2, result.Item2.Count());
+            Assert.Equal(1, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetPublicImagesByUserIdAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetPublicImagesByUserIdAsync(
+                    user.Id, It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync((IEnumerable<Image>?)null);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountByUserIdAsync(user.Id))
+                .ReturnsAsync(0);
+
+            // Act
+            var result = await _imageService.GetPublicImagesByUserIdAsync(user.Id, 1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result.Item1);
+            Assert.Empty(result.Item2);
+            Assert.Equal(0, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetRecentImagesAsync_ReturnsOK_WhenImagesExist()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImages = new List<Image>
+            {
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = false, UserId = user.Id, User = user, Request = new SDRequest() },
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image2.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() }
+            };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetRecentImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(mockImages);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalImagesCountAsync())
+                .ReturnsAsync(2);
+
+            // Act
+            var result = await _imageService.GetRecentImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result.Item1);
+            Assert.NotEmpty(result.Item2);
+            Assert.Equal(2, result.Item2.Count());
+            Assert.Equal(1, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetRecentImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            _imageRepositoryMock
+                .Setup(repo => repo.GetRecentImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync((IEnumerable<Image>?)null);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalImagesCountAsync())
+                .ReturnsAsync(0);
+
+            // Act
+            var result = await _imageService.GetRecentImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result.Item1);
+            Assert.Empty(result.Item2);
+            Assert.Equal(0, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetRecentPublicImagesAsync_ReturnsOK_WhenImagesExist()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImages = new List<Image>
+            {
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() },
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image2.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() }
+            };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetRecentPublicImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(mockImages);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountAsync())
+                .ReturnsAsync(2);
+
+            // Act
+            var result = await _imageService.GetRecentPublicImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result.Item1);
+            Assert.NotEmpty(result.Item2);
+            Assert.Equal(2, result.Item2.Count());
+            Assert.Equal(1, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetRecentPublicImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            _imageRepositoryMock
+                .Setup(repo => repo.GetRecentPublicImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync((IEnumerable<Image>?)null);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountAsync())
+                .ReturnsAsync(0);
+
+            // Act
+            var result = await _imageService.GetRecentPublicImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result.Item1);
+            Assert.Empty(result.Item2);
+            Assert.Equal(0, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetPopularPublicImagesAsync_ReturnsOK_WhenImagesExist()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImages = new List<Image>
+            {
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() },
+                new Image { Id = Guid.NewGuid(), Url = "http://example.com/image2.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() }
+            };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetPopularPublicImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(mockImages);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountAsync())
+                .ReturnsAsync(2);
+
+            // Act
+            var result = await _imageService.GetPopularPublicImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result.Item1);
+            Assert.NotEmpty(result.Item2);
+            Assert.Equal(2, result.Item2.Count());
+            Assert.Equal(1, result.Item3);
+        }
+
+        [Fact]
+        public async Task GetPopularPublicImagesAsync_ReturnsNotFound_WhenImagesDoesNotExist()
+        {
+            // Arrange
+            _imageRepositoryMock
+                .Setup(repo => repo.GetPopularPublicImagesAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync((IEnumerable<Image>?)null);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetTotalPublicImagesCountAsync())
+                .ReturnsAsync(0);
+
+            // Act
+            var result = await _imageService.GetPopularPublicImagesAsync(1, 10);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result.Item1);
+            Assert.Empty(result.Item2);
+            Assert.Equal(0, result.Item3);
+        }
+
+        [Fact]
+        public async Task MakeImagePublicAsync_ReturnsOK_WhenImageMakedPublic()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImage = new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(mockImage.Id))
+                .ReturnsAsync(mockImage);
+
+            _userServiceMock
+                .Setup(service => service.GetCurrentUserId())
+                .Returns(user.Id);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.SetImageVisibilityAsync(mockImage.Id, true))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(mockImage.Id);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result);
+        }
+
+        [Fact]
+        public async Task MakeImagePublicAsync_ReturnsNotFound_WhenImageDoesNotExist()
+        {
+            // Arrange
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync((Image?)null);
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(It.IsAny<Guid>());
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result);
+        }
+
+        [Fact]
+        public async Task MakeImagePublicAsync_ReturnsForbidden_WhenUserIsNotOwner()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImage = new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(mockImage.Id))
+                .ReturnsAsync(mockImage);
+
+            _userServiceMock
+                .Setup(service => service.GetCurrentUserId())
+                .Returns(It.IsAny<Guid>());
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(mockImage.Id);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, result);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivateAsync_ReturnsOK_WhenImageMakedPublic()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImage = new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(mockImage.Id))
+                .ReturnsAsync(mockImage);
+
+            _userServiceMock
+                .Setup(service => service.GetCurrentUserId())
+                .Returns(user.Id);
+
+            _imageRepositoryMock
+                .Setup(repo => repo.SetImageVisibilityAsync(mockImage.Id, false))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(mockImage.Id);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivateAsync_ReturnsNotFound_WhenImageDoesNotExist()
+        {
+            // Arrange
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync((Image?)null);
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(It.IsAny<Guid>());
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result);
+        }
+
+        [Fact]
+        public async Task MakeImagePrivateAsync_ReturnsForbidden_WhenUserIsNotOwner()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user"
+            };
+
+            var mockImage = new Image { Id = Guid.NewGuid(), Url = "http://example.com/image1.jpg", CreatedBy = user.Username, IsPublic = true, UserId = user.Id, User = user, Request = new SDRequest() };
+
+            _imageRepositoryMock
+                .Setup(repo => repo.GetImageByIdAsync(mockImage.Id))
+                .ReturnsAsync(mockImage);
+
+            _userServiceMock
+                .Setup(service => service.GetCurrentUserId())
+                .Returns(It.IsAny<Guid>());
+
+            // Act
+            var result = await _imageService.MakeImagePublicAsync(mockImage.Id);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, result);
+        }
     }
 }

@@ -13,19 +13,19 @@ namespace ArtNaxiApi.Repositories
             _context = context;
         }
 
-        public async Task<Style> GetStyleByIdAsync(Guid id)
+        public async Task<Style?> GetStyleByIdAsync(Guid id)
         {
             return await _context.Styles
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task<Style> GetStyleByNameAsync(string styleName)
+        public async Task<Style?> GetStyleByNameAsync(string styleName)
         {
             return await _context.Styles
                 .FirstOrDefaultAsync(s => s.Name == styleName);
         }
 
-        public async Task<IEnumerable<Style>> GetAllStylesAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Style>?> GetAllStylesAsync(int pageNumber, int pageSize)
         {
             return await _context.Styles
                 .Skip((pageNumber - 1) * pageSize)

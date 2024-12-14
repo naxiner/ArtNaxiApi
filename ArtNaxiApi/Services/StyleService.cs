@@ -16,7 +16,7 @@ namespace ArtNaxiApi.Services
             _styleRepository = styleRepository;
         }
 
-        public async Task<(HttpStatusCode, StyleDto)> GetStyleByIdAsync(Guid id)
+        public async Task<(HttpStatusCode, StyleDto?)> GetStyleByIdAsync(Guid id)
         {
             var style = await _styleRepository.GetStyleByIdAsync(id);
             if (style == null)
@@ -33,7 +33,7 @@ namespace ArtNaxiApi.Services
             return (HttpStatusCode.OK, styleDto);
         }
 
-        public async Task<(HttpStatusCode, StyleDto)> GetStyleByNameAsync(string styleName)
+        public async Task<(HttpStatusCode, StyleDto?)> GetStyleByNameAsync(string styleName)
         {
             var style = await _styleRepository.GetStyleByNameAsync(styleName);
             if (style == null)
@@ -50,7 +50,7 @@ namespace ArtNaxiApi.Services
             return (HttpStatusCode.OK, styleDto);
         }
 
-        public async Task<(HttpStatusCode, IEnumerable<StyleDto>, int)> GetAllStylesAsync(int pageNumber, int pageSize)
+        public async Task<(HttpStatusCode, IEnumerable<StyleDto>?, int)> GetAllStylesAsync(int pageNumber, int pageSize)
         {
             var styles = await _styleRepository.GetAllStylesAsync(pageNumber, pageSize);
             if (styles == null)

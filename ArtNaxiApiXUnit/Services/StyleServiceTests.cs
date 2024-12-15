@@ -4,6 +4,8 @@ using Moq;
 using System.Net;
 using ArtNaxiApi.Models;
 using ArtNaxiApi.Models.DTO;
+using ArtNaxiApi.Constants;
+using System.Security.Claims;
 
 namespace ArtNaxiApiXUnit.Services
 {
@@ -165,6 +167,169 @@ namespace ArtNaxiApiXUnit.Services
             Assert.Equal(HttpStatusCode.NotFound, result.Item1);
             Assert.Null(result.Item2);
             Assert.Equal(0, result.Item3);
+        }
+
+        [Fact]
+        public async Task AddStyleAsync_ReturnsOK_WhenStyleAddedSuccessful()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            var addStyleDto = new AddStyleDto()
+            {
+                Name = "Style"
+            };
+
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByNameAsync(addStyleDto.Name))
+                .ReturnsAsync((Style?)null);
+
+            var style = new Style()
+            {
+                Id = Guid.NewGuid(),
+                Name = addStyleDto.Name
+            };
+
+            _styleRepositoryMock.Setup(repo => repo.AddStyleAsync(style))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _styleService.AddStyleAsync(addStyleDto, userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result);
+        }
+
+        [Fact]
+        public async Task AddStyleAsync_ReturnsBadRequest_WhenUserIsNotAdmin()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.User)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            // Act
+            var result = await _styleService.AddStyleAsync(It.IsAny<AddStyleDto>(), userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, result);
+        }
+
+        [Fact]
+        public async Task AddStyleAsync_ReturnsConflict_WhenStyleAlreadyExist()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            var addStyleDto = new AddStyleDto()
+            {
+                Name = "Style"
+            };
+
+            var existingStyle = new Style()
+            {
+                Id = Guid.NewGuid(),
+                Name = addStyleDto.Name
+            };
+
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByNameAsync(addStyleDto.Name))
+                .ReturnsAsync(existingStyle);
+
+            // Act
+            var result = await _styleService.AddStyleAsync(addStyleDto, userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Conflict, result);
+        }
+
+        [Fact]
+        public async Task UpdateStyleByIdAsync_ReturnsOK_WhenStyleUpdatedSuccessful()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            var styleDto = new StyleDto()
+            {
+                Id = Guid.NewGuid(),
+                Name = "UpdatedStyle"
+            };
+
+            var existingStyle = new Style()
+            {
+                Id = styleDto.Id,
+                Name = "Style"
+            };
+
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByIdAsync(styleDto.Id))
+                .ReturnsAsync(existingStyle);
+
+            _styleRepositoryMock.Setup(repo => repo.UpdateStyleAsync(existingStyle))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _styleService.UpdateStyleByIdAsync(styleDto.Id, styleDto, userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, result);
+        }
+
+        [Fact]
+        public async Task UpdateStyleByIdAsync_ReturnsBadRequest_WhenUserIsNotAdmin()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.User)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            // Act
+            var result = await _styleService
+                .UpdateStyleByIdAsync(Guid.NewGuid(), It.IsAny<StyleDto>(), userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, result);
+        }
+
+        [Fact]
+        public async Task UpdateStyleByIdAsync_ReturnsNotFound_WhenStyleDoesNotExist()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            var styleId = Guid.NewGuid();
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByIdAsync(styleId))
+                .ReturnsAsync((Style?)null);
+
+            // Act
+            var result = await _styleService
+                .UpdateStyleByIdAsync(styleId, It.IsAny<StyleDto>(), userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result);
         }
     }
 }

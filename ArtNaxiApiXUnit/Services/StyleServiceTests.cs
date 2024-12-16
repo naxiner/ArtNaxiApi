@@ -331,5 +331,72 @@ namespace ArtNaxiApiXUnit.Services
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result);
         }
+
+        [Fact]
+        public async Task DeleteStyleByIdAsync_ReturnsNoContent_WhenStyleDeletedSuccessful()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            var style = new Style()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test"
+            };
+
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByIdAsync(style.Id))
+                .ReturnsAsync(style);
+
+            // Act
+            var result = await _styleService.DeleteStyleByIdAsync(style.Id, userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, result);
+        }
+
+        [Fact]
+        public async Task DeleteStyleByIdAsync_ReturnsBadRequest_WhenUserIsNotAdmin()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.User)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            // Act
+            var result = await _styleService.DeleteStyleByIdAsync(It.IsAny<Guid>(), userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, result);
+        }
+
+        [Fact]
+        public async Task DeleteStyleByIdAsync_ReturnsNotFound_WhenStyleDoesNotExist()
+        {
+            // Arrange
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, Roles.Admin)
+            };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+
+            _styleRepositoryMock.Setup(repo => repo.GetStyleByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync((Style?)null);
+
+            // Act
+            var result = await _styleService.DeleteStyleByIdAsync(It.IsAny<Guid>(), userPrincipal);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, result);
+        }
     }
 }

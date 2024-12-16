@@ -124,6 +124,11 @@ namespace ArtNaxiApi.Services
 
         public async Task<HttpStatusCode> DeleteStyleByIdAsync(Guid id, ClaimsPrincipal userClaim)
         {
+            if (!userClaim.IsInRole(Roles.Admin))
+            {
+                return HttpStatusCode.BadRequest;   // You are not allowed to delete style
+            }
+
             var style = await _styleRepository.GetStyleByIdAsync(id);
             if (style == null)
             {

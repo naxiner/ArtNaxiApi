@@ -23,7 +23,8 @@ namespace ArtNaxiApi
 
             builder.Services.AddHealthChecks()
                 .AddCheck<DatabaseHealthCheck>("Database")
-                .AddCheck<RedisHealthCheck>("Redis");
+                .AddCheck<RedisHealthCheck>("Redis")
+                .AddCheck<StableDiffusionHealthCheck>("StableDiffusion");
 
             builder.WebHost.ConfigureKestrel(options =>
             {

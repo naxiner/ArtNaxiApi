@@ -37,7 +37,7 @@ namespace ArtNaxiApi.Services
             _userProfileRepository = userProfileRepository;
             _likeRepository = likeRepository;
             _userService = userService;
-            _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"];
+            _apiUrlTextToImg = configuration["StableDiffusion:ApiUrlTextToImg"]!;
         }
 
         public async Task<(HttpStatusCode, ImageDto?)> GenerateImageAsync(SDRequest request)

@@ -12,6 +12,8 @@ using ArtNaxiApi.Services.Cached;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Cryptography.X509Certificates;
 using ArtNaxiApi.Health;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 namespace ArtNaxiApi
 {
@@ -177,7 +179,10 @@ namespace ArtNaxiApi
                 });
             }
 
-            app.MapHealthChecks("/health");
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
             app.UseCors("Cors");
 

@@ -11,7 +11,9 @@ using StackExchange.Redis;
 using ArtNaxiApi.Services.Cached;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Cryptography.X509Certificates;
-
+using ArtNaxiApi.Health;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 namespace ArtNaxiApi
 {
@@ -20,6 +22,11 @@ namespace ArtNaxiApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddHealthChecks()
+                .AddCheck<DatabaseHealthCheck>("Database")
+                .AddCheck<RedisHealthCheck>("Redis")
+                .AddCheck<StableDiffusionHealthCheck>("StableDiffusion");
 
             builder.WebHost.ConfigureKestrel(options =>
             {
@@ -171,6 +178,11 @@ namespace ArtNaxiApi
                     c.RoutePrefix = string.Empty;
                 });
             }
+
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
             app.UseCors("Cors");
 
